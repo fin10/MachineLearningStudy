@@ -8,56 +8,77 @@
 	<script src="https://swisnl.github.io/jQuery-contextMenu/dist/jquery.contextMenu.js" type="text/javascript"></script>
 	<script src="https://swisnl.github.io/jQuery-contextMenu/dist/jquery.ui.position.min.js" type="text/javascript"></script>
 	
-		<script>
-	var slot_data_list;
-	var slot_candidates = {};
-	var intent_candidates = {};
+	<script>
+	var slotCandidates = {};
+	var intentCandidates = {};
 	
+	var contextMenuForSlot = {
+		items: slotCandidates,
+		callback: function(itemKey, opt) {
+			var input = document.getElementById("utterance");
+			var index = getSelectionStart(input);
+			if (index > 0) {
+				for (; index >= 0; --index) {
+					if (input.value.charAt(index - 1) == ' ') {
+						break;
+					}
+				}
+			}
+			
+			var startIdx = -1, endIdx = -1;				
+			for (; index < input.value.length; ++index) {
+				if (input.value.charAt(index) == ' ') {
+					if (startIdx == -1) startIdx = index;
+					endIdx = index;
+					break;
+				} else if (input.value.charAt(index) == '/') {
+					startIdx = index;
+				}
+			}
+			
+			if (startIdx == -1) startIdx = index;
+			if (endIdx == -1) endIdx = index;
+			
+			var output = insertString(input.value, startIdx, endIdx, '/I-' + itemKey);
+			input.value = arrangeSlots(output);
+			return true;
+		}
+	};
+
+	var contextMenuForIntent = {
+		items: intentCandidates,
+		callback: function(itemKey, opt) {
+			var input = document.getElementById("utterance");
+			var text = input.value.substring(input.selectionStart, input.selectionEnd).trim();
+			console.log(text);
+
+			return true;
+		}
+	};
+
 	$(function() {
         $.contextMenu({
             selector: '.context-menu-one',
 			build: function($triggerElement, e) {
-				return {
-					items: slot_candidates
-				}
-			},
-			callback: function(itemKey, opt) {
 				var input = document.getElementById("utterance");
-				var index = getSelectionStart(input);
-				for (; index >= 0; --index) {
-					if (input.value.charAt(index) == ' ') {
-						++index;
-						break;
-					}
-				}
-				
-				var startIdx = -1, endIdx = -1;				
-				for (; index < input.value.length; ++index) {
-					if (input.value.charAt(index) == ' ') {
-						if (startIdx == -1) startIdx = index;
-						endIdx = index;
-						break;
-					} else if (input.value.charAt(index) == '/') {
-						startIdx = index;
-					}
-				}
-				
-				var head = input.value.substring(0, startIdx);
-				var tail = input.value.substring(endIdx);
-				var output = head + "/I-" + itemKey + tail;
-				input.value = arrangeSlots(output);
-				return true;
-			}
+				var text = input.value.substring(input.selectionStart, input.selectionEnd).trim();
+				if (text == '') return contextMenuForSlot;
+				else return contextMenuForIntent;
+			},
         });
     });
 
+	function insertString(text, headIdx, tailIdx, str) {
+		var head = text.substring(0, headIdx);
+		var tail = text.substring(tailIdx);
+		return head + str + tail;
+	};
+
 	function arrangeSlots(text) {
-		var output = text.replace("/B-", "/I-");
-		var idx = output.indexOf("/I-");
+		var output = text.replace('/B-', '/I-');
+		var idx = output.indexOf('/I-');
 		if (idx > -1) {
-			var head = output.substring(0, idx + 1);
-			var tail = output.substring(idx + 2);
-			output = head + 'B' + tail;
+			output = insertString(output, idx, idx + '/I-'.length, '/B-');
 		}
 		
 		return output;
@@ -67,12 +88,14 @@
 		var file = input.files[0];
 		var reader = new FileReader();
 		reader.onload = function(e) {
-		  slot_data_list = reader.result.split("\n");
- 		  console.log(slot_data_list);
-		  var menu = document.getElementById("slot_data_list");
-		  for (var i = 0; i < slot_data_list.length; ++i ) {
-			slot_candidates[slot_data_list[i]] = {name: slot_data_list[i]};
-		  }		  
+		  var dataList = reader.result.split("\n");
+		  for (var i = 0; i < dataList.length; ++i ) {
+			var text = dataList[i].trim();
+			if (text == '') continue;
+
+			slotCandidates[text] = { name: text };
+		  }
+ 		  console.log(slotCandidates);
 		}
 
 		reader.readAsText(file);
@@ -82,8 +105,23 @@
 		var file = input.files[0];
 		var reader = new FileReader();
 		reader.onload = function(e) {
-		  intent_candidates = JSON.parse(reader.result);
- 		  console.log(intent_candidates);
+		  var dataList = reader.result.split("\n");
+		  var domain;
+		  for (var i = 0; i < dataList.length; ++i ) {
+			var text = dataList[i].trim();
+			if (text == '') continue;
+			
+			if (text.charAt(0) == '#') {
+				domain = text.replace('#', '');
+				intentCandidates[domain] = { 
+					name: domain, 
+					items: {}
+				};
+			} else if (domain != null) {
+				intentCandidates[domain]['items'][text] = { name: text };
+			}
+		  }
+ 		  console.log(intentCandidates);
 		}
 
 		reader.readAsText(file);
@@ -105,7 +143,9 @@
 <body>
 	<label for="utterance">Utterance
 	<input type="text" id="utterance" class="context-menu-one" name="utterance" value="어제 찍은 사진 보내줘"><br/>
-	<input type="file" id="slotDataInput" onchange="onSlotFileUploaded(this)">
+	<label for="slotDataInput">Slot
+	<input type="file" id="slotDataInput" onchange="onSlotFileUploaded(this)"><br/>
+	<label for="intentDataInput">Intent
 	<input type="file" id="intentDataInput" onchange="onIntentFileUploaded(this)">
 </body>
 

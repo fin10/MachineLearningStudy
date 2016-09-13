@@ -1,0 +1,16 @@
+{
+	"Gallery": {
+		"name": "Gallery",
+		"items": {
+			"Find.Photo" : { "name": "Find.Photo" },
+			"Show.Photo" : { "name": "Show.Photo" }
+		}
+	},
+	
+	"ContextManager": {
+		"name": "ContextManager",
+		"items": {
+			"Find.PhotoFromContext" : { "name": "Find.PhotoFromContext" }
+		}
+	}
+}

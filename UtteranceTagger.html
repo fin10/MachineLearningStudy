@@ -3,10 +3,70 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Utterance Tagger</title>
-	<link rel="stylesheet" href="https://swisnl.github.io/jQuery-contextMenu/dist/jquery.contextMenu.css" type="text/css" />
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js" type="text/javascript"></script>
-	<script src="https://swisnl.github.io/jQuery-contextMenu/dist/jquery.contextMenu.js" type="text/javascript"></script>
-	<script src="https://swisnl.github.io/jQuery-contextMenu/dist/jquery.ui.position.min.js" type="text/javascript"></script>
+	<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.0/themes/smoothness/jquery-ui.css"/>
+	<link rel="stylesheet" href="https://swisnl.github.io/jQuery-contextMenu/dist/jquery.contextMenu.css"/>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+	<script src="https://swisnl.github.io/jQuery-contextMenu/dist/jquery.contextMenu.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.0/jquery-ui.min.js"></script>
+	
+	<style>
+	body {
+		width: 100%;
+		height: 100%;
+		background-color: #03A9F4;
+	}
+	
+	div#input_area {
+		width: 80%;
+		margin: auto;
+	}
+
+	div#input_area input {
+		width: 100%;
+		padding: 16px;
+		margin-top: 10px;
+		margin-bottom: 10px;
+		font-size: 32px;
+		border-style: solid;
+		border-width: 5px;
+		border-color: #0288D1;
+	}
+
+	div#utterance_area {
+		width: 90%;
+		height: 100%;
+		margin: auto;
+		background-color: white;
+	}
+	
+	#selectable { 
+		list-style-type: none; 
+		margin: 0; 
+		padding: 0; 
+		width: 100%; 
+	}
+
+	#selectable li { 
+		padding: 16px; 
+		font-size: 24px; 
+	}
+
+	#selectable .ui-selected { 
+		background: #F39814; 
+		color: white; 
+	}
+
+	#selectable li span.list-item-raw {
+		display: inline-block;
+		width: 50%;
+	}	
+
+	#selectable li span.list-item-tagged {
+		display: inline-block;
+		width: 50%;
+	}	
+	
+	</style>
 	
 	<script>
 	var slotCandidates = {};
@@ -15,7 +75,7 @@
 	var contextMenuForSlot = {
 		items: slotCandidates,
 		callback: function(itemKey, opt) {
-			var input = document.getElementById("utterance");
+			var input = opt.$trigger[0];
 			var index = getSelectionStart(input);
 			if (index > 0) {
 				for (; index >= 0; --index) {
@@ -27,7 +87,7 @@
 			
 			var startIdx = -1, endIdx = -1;				
 			for (; index < input.value.length; ++index) {
-				if (input.value.charAt(index) == ' ') {
+				if (input.value.charAt(index) == ' ' || input.value.charAt(index) == ')') {
 					if (startIdx == -1) startIdx = index;
 					endIdx = index;
 					break;
@@ -39,8 +99,9 @@
 			if (startIdx == -1) startIdx = index;
 			if (endIdx == -1) endIdx = index;
 			
-			var output = insertString(input.value, startIdx, endIdx, '/I-' + itemKey);
-			input.value = arrangeSlots(output);
+			input.value = insertString(input.value, startIdx, endIdx, '/B-' + itemKey);
+			input.oninput(input);
+
 			return true;
 		}
 	};
@@ -48,7 +109,7 @@
 	var contextMenuForIntent = {
 		items: intentCandidates,
 		callback: function(itemKey, opt) {
-			var input = document.getElementById("utterance");
+			var input = opt.$trigger[0];
 			var text = input.value.substring(input.selectionStart, input.selectionEnd).trim();
 			console.log(text);
 
@@ -64,17 +125,29 @@
 			console.log('domain:' + domain + ', intent:' + itemKey);
 			input.value = insertString(input.value, input.selectionStart, input.selectionEnd, 
 				'(' + text + ')#' + domain + '%' + itemKey);
+			input.oninput(input);
 			
 			return true;
 		}
 	};
 
 	$(function() {
+		$('#selectable').selectable({
+			stop: function() {
+				$('.ui-selected', this).each(function() {
+					$('#inputRaw').val(this.children[0].innerText);
+					$('#inputTagged').val(this.children[1].innerText);
+				});
+			}
+		});
+	});	
+
+	$(function() {
         $.contextMenu({
             selector: '.context-menu-one',
 			build: function($triggerElement, e) {
-				var input = document.getElementById("utterance");
-				var text = input.value.substring(input.selectionStart, input.selectionEnd).trim();
+				var input = $triggerElement[0];
+				var text = $triggerElement.val().substring(input.selectionStart, input.selectionEnd).trim();
 				if (text == '') return contextMenuForSlot;
 				else return contextMenuForIntent;
 			},
@@ -87,14 +160,12 @@
 		return head + str + tail;
 	};
 
-	function arrangeSlots(text) {
-		var output = text.replace('/B-', '/I-');
-		var idx = output.indexOf('/I-');
-		if (idx > -1) {
-			output = insertString(output, idx, idx + '/I-'.length, '/B-');
-		}
-		
-		return output;
+	function onRawInputChanged(input) {
+		$('#selectable .ui-selected')[0].children[0].innerText = input.value;
+	}
+
+	function onTaggedInputChanged(input) {
+		$('#selectable .ui-selected')[0].children[1].innerText = input.value;
 	}
 	
 	function onSlotFileUploaded(input) {
@@ -154,12 +225,23 @@
 </head>
 
 <body>
-	<label for="utterance">Utterance
-	<input type="text" id="utterance" class="context-menu-one" name="utterance" value="어제 찍은 사진 보내줘"><br/>
-	<label for="slotDataInput">Slot
-	<input type="file" id="slotDataInput" onchange="onSlotFileUploaded(this)"><br/>
-	<label for="intentDataInput">Intent
-	<input type="file" id="intentDataInput" onchange="onIntentFileUploaded(this)">
+	<label for="slotDataInput">Slot</label>
+	<input type="file" id="slotDataInput" onchange="onSlotFileUploaded(this)"/><br/>
+	<label for="intentDataInput">Intent</label>
+	<input type="file" id="intentDataInput" onchange="onIntentFileUploaded(this)"/><br/>
+
+	<div id="input_area">
+		<input type="text" id="inputRaw" oninput="onRawInputChanged(this)"/><br/>
+		<input type="text" id="inputTagged" class="context-menu-one" oninput="onTaggedInputChanged(this)"/>
+	</div>
+	
+	<div id="utterance_area">
+		<ol id="selectable">
+			<li class="ui-widget-content"><span class="list-item-raw">어제 찍은 사진 보내줘</span><span class="list-item-tagged">어제 찍은 사진 보내줘/B-Location</span></li>
+			<li class="ui-widget-content"><span class="list-item-raw">하와이에서 찍은 사진 보내줘</span><span class="list-item-tagged">하와이에서/B-Location 찍은 사진 보내줘</span></li>
+		</ol>
+	</div>
+	
 </body>
 
 </html>

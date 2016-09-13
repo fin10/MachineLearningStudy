@@ -7,49 +7,106 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 	<script src="https://swisnl.github.io/jQuery-contextMenu/dist/jquery.contextMenu.js" type="text/javascript"></script>
 	<script src="https://swisnl.github.io/jQuery-contextMenu/dist/jquery.ui.position.min.js" type="text/javascript"></script>
+	
+		<script>
+	var slot_data_list;
+	var slot_candidates = {};
+	var intent_candidates = {};
+	
+	$(function() {
+        $.contextMenu({
+            selector: '.context-menu-one',
+			build: function($triggerElement, e) {
+				return {
+					items: slot_candidates
+				}
+			},
+			callback: function(itemKey, opt) {
+				var input = document.getElementById("utterance");
+				var index = getSelectionStart(input);
+				for (; index >= 0; --index) {
+					if (input.value.charAt(index) == ' ') {
+						++index;
+						break;
+					}
+				}
+				
+				var startIdx = -1, endIdx = -1;				
+				for (; index < input.value.length; ++index) {
+					if (input.value.charAt(index) == ' ') {
+						if (startIdx == -1) startIdx = index;
+						endIdx = index;
+						break;
+					} else if (input.value.charAt(index) == '/') {
+						startIdx = index;
+					}
+				}
+				
+				var head = input.value.substring(0, startIdx);
+				var tail = input.value.substring(endIdx);
+				var output = head + "/I-" + itemKey + tail;
+				input.value = arrangeSlots(output);
+				return true;
+			}
+        });
+    });
+
+	function arrangeSlots(text) {
+		var output = text.replace("/B-", "/I-");
+		var idx = output.indexOf("/I-");
+		if (idx > -1) {
+			var head = output.substring(0, idx + 1);
+			var tail = output.substring(idx + 2);
+			output = head + 'B' + tail;
+		}
+		
+		return output;
+	}
+	
+	function onSlotFileUploaded(input) {
+		var file = input.files[0];
+		var reader = new FileReader();
+		reader.onload = function(e) {
+		  slot_data_list = reader.result.split("\n");
+ 		  console.log(slot_data_list);
+		  var menu = document.getElementById("slot_data_list");
+		  for (var i = 0; i < slot_data_list.length; ++i ) {
+			slot_candidates[slot_data_list[i]] = {name: slot_data_list[i]};
+		  }		  
+		}
+
+		reader.readAsText(file);
+	}
+
+	function onIntentFileUploaded(input) {
+		var file = input.files[0];
+		var reader = new FileReader();
+		reader.onload = function(e) {
+		  intent_candidates = JSON.parse(reader.result);
+ 		  console.log(intent_candidates);
+		}
+
+		reader.readAsText(file);
+	}
+
+	function getSelectionStart(input) {
+		if (input.createTextRange) {
+			var r = document.selection.createRange().duplicate();
+			r.moveEnd('character', input.value.length);
+			if (r.text == '') return input.value.length;
+			return input.value.lastIndexOf(r.text);
+		} else {
+			return input.selectionStart;
+		}
+	}
+	</script>
 </head>
 
 <body>
-	<script>
-	$(function() {
-        $.contextMenu({
-            selector: '.context-menu-one', 
-            items: {
-                "keyword": {name: "keyword"}
-            }
-        });
-
-        $('.context-menu-one').on('click', function(e){
-            console.log('clicked', this);
-        })    
-    });
-
-	function onTextChanged() {
-		var input = document.getElementById("utterance");
-		var index = getSelectionEnd(input.value);
-		var text = input.value.substring(0, index);
-		console.log(index + ", " + text);
-		if (text.endsWith("-")) {
-			var text = text.toLowerCase();
-			if (text.endsWith("/b-")) {
-				console.log("begin");
-			} else if (text.endsWith("/i")) {
-				console.log("interval");
-			}
-		}
-	}
-
-	function getSelectionEnd(o) {
-		if (o.createTextRange) {
-			var r = document.selection.createRange().duplicate();
-			r.moveStart('character', -o.value.length);
-			return r.text.length;
-		} else return o.selectionEnd;
-	}
-	</script>
-
-	<label class="context-menu-one" for="utterance">Utterance
-	<input type="text" id="utterance" name="utterance" onkeyup="onTextChanged()">
+	<label for="utterance">Utterance
+	<input type="text" id="utterance" class="context-menu-one" name="utterance" value="어제 찍은 사진 보내줘"><br/>
+	<input type="file" id="slotDataInput" onchange="onSlotFileUploaded(this)">
+	<input type="file" id="intentDataInput" onchange="onIntentFileUploaded(this)">
 </body>
 
 </html>

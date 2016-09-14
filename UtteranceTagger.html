@@ -9,8 +9,8 @@
 	<script src="https://swisnl.github.io/jQuery-contextMenu/dist/jquery.contextMenu.js"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.0/jquery-ui.min.js"></script>
 	<script src="https://cdn.rawgit.com/eligrey/Blob.js/0cef2746414269b16834878a8abc52eb9d53e6bd/Blob.js"></script>
-    <script src="https://cdn.rawgit.com/eligrey/canvas-toBlob.js/f1a01896135ab378aa5c0118eadd81da55e698d8/canvas-toBlob.js"></script>
-    <script src="https://cdn.rawgit.com/eligrey/FileSaver.js/e9d941381475b5df8b7d7691013401e171014e89/FileSaver.min.js"></script>
+	<script src="https://cdn.rawgit.com/eligrey/canvas-toBlob.js/f1a01896135ab378aa5c0118eadd81da55e698d8/canvas-toBlob.js"></script>
+	<script src="https://cdn.rawgit.com/eligrey/FileSaver.js/e9d941381475b5df8b7d7691013401e171014e89/FileSaver.min.js"></script>
 	
 	<style>
 	body {
@@ -233,6 +233,14 @@
 		if (tagged == null) tagged = '';
 		$('#selectable').append('<li class="ui-widget-content"><span class="list-item-raw">' + raw + '</span><span class="list-item-tagged">' + tagged + '</span></li>');
 	}
+	
+	function deleteAllItems() {
+		var result = window.confirm('Delete all data?');
+		if (result) {
+			$('#selectable li').remove();
+			addListItem();
+		}
+	}
 
 	function onUntteranceDataImported(input) {
 		var file = input.files[0];
@@ -254,12 +262,13 @@
 
 	function exportUtteranceData() {
 		var text = '';
-		var items = $('ol#selectable')[0].children;
+		var items = $('#selectable')[0].children;
 		for (var i = 0; i < items.length; ++i) {
-			text += items[i].children[0].innerText;
-			text += ',';
-			text += items[i].children[1].innerText;
-			text += '\n';
+			var raw = items[i].children[0].innerText;
+			var tagged = items[i].children[1].innerText;
+			if (raw != '' || tagged != '') {
+				text += raw + ',' + tagged + '\n';
+			}
 		}
 		
 		var file = new File([text], '', { type: "text/plain;charset=utf-8" });
@@ -288,6 +297,7 @@
 	
 	<div id="utterance_area">
 		<button class="ui-button ui-widget ui-corner-all" onclick="addListItem()">Add</button>
+		<button class="ui-button ui-widget ui-corner-all" onclick="deleteAllItems()">Clear</button>
 		<button class="ui-button ui-widget ui-corner-all" onclick="triggerClickEvent('inputImport')">Import</button>
 		<button class="ui-button ui-widget ui-corner-all" onclick="exportUtteranceData()">Export</button>
 	

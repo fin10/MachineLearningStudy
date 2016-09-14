@@ -44,7 +44,7 @@
 			if (startIdx == -1) startIdx = index;
 			if (endIdx == -1) endIdx = index;
 			
-			input.value = insertString(input.value, startIdx, endIdx, '/B-' + itemKey);
+			input.value = insertString(input.value, startIdx, endIdx, '/' + itemKey);
 			input.oninput(input);
 
 			return true;
@@ -81,6 +81,7 @@
 				$('.ui-selected', this).each(function() {
 					$('#inputRaw').val(this.children[0].innerText);
 					$('#inputTagged').val(this.children[1].innerText);
+					$('#inputRaw')[0].focus();
 				});
 			}
 		});
@@ -121,11 +122,21 @@
 			var text = dataList[i].trim();
 			if (text == '') continue;
 
-			slotCandidates[text] = { name: text };
+			slotCandidates[text] = { 
+				name: text,
+				items: {}
+			};
+			
+			slotCandidates[text]['items']['B-' + text] = { name : 'B' };
+			slotCandidates[text]['items']['I-' + text] = { name : 'I' };
 		  }
+		  
  		  console.log(slotCandidates);
-		  $('#slotDataLoadButton').removeClass('unsatisfied');
-		  $('#slotDataLoadButton').addClass('satisfied');
+		  
+		  if (dataList.length > 0) {
+			  $('#slotDataLoadButton').removeClass('unsatisfied');
+			  $('#slotDataLoadButton').addClass('satisfied');
+		  }
 		}
 
 		reader.readAsText(file);
@@ -152,9 +163,13 @@
 				intentCandidates[domain]['items'][text] = { name: text };
 			}
 		  }
+		  
  		  console.log(intentCandidates);
-		  $('#intentDataLoadButton').removeClass('unsatisfied');
-		  $('#intentDataLoadButton').addClass('satisfied');
+		  
+		  if (dataList.length > 0) {
+			  $('#intentDataLoadButton').removeClass('unsatisfied');
+			  $('#intentDataLoadButton').addClass('satisfied');
+		  }
 		}
 
 		reader.readAsText(file);

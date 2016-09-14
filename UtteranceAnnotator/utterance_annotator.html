@@ -237,8 +237,8 @@
 		<h1 id="title">Utterance Annotator</h1>
 		
 		<div id="inputArea">
-			<input type="text" id="inputRaw" oninput="onRawInputChanged(this)"/><br/>
-			<input type="text" id="inputTagged" class="context-menu-one" oninput="onTaggedInputChanged(this)"/>
+			<input type="text" id="inputRaw" oninput="onRawInputChanged(this)" placeholder="Input your utterance"/><br/>
+			<input type="text" id="inputTagged" class="context-menu-one" placeholder="Annotate your utterance with slot, intent and domain" oninput="onTaggedInputChanged(this)"/>
 
 		</div>
 		
@@ -248,8 +248,8 @@
 		</div>
 	</div>
 	
-	<div id="utteranceArea">
-		<div id="dataControlArea">
+	<div id="utteranceArea" class="center">
+		<div id="utteranceDataControlArea">
 			<button class="ui-button ui-widget ui-corner-all" onclick="addListItem()">Add</button>
 			<button class="ui-button ui-widget ui-corner-all" onclick="deleteAllItems()">Clear</button>
 			<button class="ui-button ui-widget ui-corner-all" onclick="triggerClickEvent('inputImport')">Import</button>

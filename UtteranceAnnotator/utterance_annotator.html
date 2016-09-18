@@ -12,13 +12,27 @@
 	<script src="https://cdn.rawgit.com/eligrey/Blob.js/0cef2746414269b16834878a8abc52eb9d53e6bd/Blob.js"></script>
 	<script src="https://cdn.rawgit.com/eligrey/canvas-toBlob.js/f1a01896135ab378aa5c0118eadd81da55e698d8/canvas-toBlob.js"></script>
 	<script src="https://cdn.rawgit.com/eligrey/FileSaver.js/e9d941381475b5df8b7d7691013401e171014e89/FileSaver.min.js"></script>
+	<script src="./utterance.js"></script>
 	
 	<script>
-	var slotCandidates = {};
-	var intentCandidates = {};
+	function init() {
+		var slot = localStorage.getItem('slot');
+		if (slot != null) {
+			contextMenuForSlot.items = Slot.parseSlotData(slot);
+			$('#slotDataLoadButton').removeClass('unsatisfied');
+			$('#slotDataLoadButton').addClass('satisfied');
+		}
+		
+		var intent = localStorage.getItem('intent');
+		if (intent != null) {
+			contextMenuForIntent.items = Intent.parseIntentData(intent);
+			$('#intentDataLoadButton').removeClass('unsatisfied');
+			$('#intentDataLoadButton').addClass('satisfied');
+		}
+	}
 	
 	var contextMenuForSlot = {
-		items: slotCandidates,
+		items: {},
 		callback: function(itemKey, opt) {
 			var input = opt.$trigger[0];
 			var index = getSelectionStart(input);
@@ -52,40 +66,17 @@
 	};
 
 	var contextMenuForIntent = {
-		items: intentCandidates,
+		items: {},
 		callback: function(itemKey, opt) {
 			var input = opt.$trigger[0];
 			var text = input.value.substring(input.selectionStart, input.selectionEnd).trim();
-			console.log(text);
-
-			var domain;
-			var keys = Object.keys(intentCandidates);
-			for (var i = 0; i < keys.length; ++i) {
-				if (intentCandidates[keys[i]]['items'][itemKey] != null) {
-					domain = keys[i];
-					break;
-				}
-			}
-			
-			console.log('domain:' + domain + ', intent:' + itemKey);
-			input.value = insertString(input.value, input.selectionStart, input.selectionEnd, '(' + text + ')#' + domain + '%' + itemKey);
+		
+			input.value = insertString(input.value, input.selectionStart, input.selectionEnd, '(' + text + ')' + itemKey);
 			input.oninput(input);
 			
 			return true;
 		}
 	};
-
-	$(function() {
-		$('#selectable').selectable({
-			stop: function() {
-				$('.ui-selected', this).each(function() {
-					$('#inputRaw').val(this.children[0].innerText);
-					$('#inputTagged').val(this.children[1].innerText);
-					$('#inputRaw')[0].focus();
-				});
-			}
-		});
-	});	
 
 	$(function() {
         $.contextMenu({
@@ -99,11 +90,17 @@
         });
     });
 
-	function insertString(text, headIdx, tailIdx, str) {
-		var head = text.substring(0, headIdx);
-		var tail = text.substring(tailIdx);
-		return head + str + tail;
-	};
+	$(function() {
+		$('#selectable').selectable({
+			stop: function() {
+				$('.ui-selected', this).each(function() {
+					$('#inputRaw').val(this.children[0].innerText);
+					$('#inputTagged').val(this.children[1].innerText);
+					$('#inputRaw')[0].focus();
+				});
+			}
+		});
+	});
 
 	function onRawInputChanged(input) {
 		$('#selectable .ui-selected')[0].children[0].innerText = input.value;
@@ -117,26 +114,11 @@
 		var file = input.files[0];
 		var reader = new FileReader();
 		reader.onload = function(e) {
-		  var dataList = reader.result.split("\n");
-		  for (var i = 0; i < dataList.length; ++i ) {
-			var text = dataList[i].trim();
-			if (text == '') continue;
+			contextMenuForSlot.items = Slot.parserSlotData(reader.result);
 
-			slotCandidates[text] = { 
-				name: text,
-				items: {}
-			};
-			
-			slotCandidates[text]['items']['B-' + text] = { name : 'B' };
-			slotCandidates[text]['items']['I-' + text] = { name : 'I' };
-		  }
-		  
- 		  console.log(slotCandidates);
-		  
-		  if (dataList.length > 0) {
-			  $('#slotDataLoadButton').removeClass('unsatisfied');
-			  $('#slotDataLoadButton').addClass('satisfied');
-		  }
+			localStorage.setItem('slot', reader.result);
+			$('#slotDataLoadButton').removeClass('unsatisfied');
+			$('#slotDataLoadButton').addClass('satisfied');
 		}
 
 		reader.readAsText(file);
@@ -147,35 +129,23 @@
 		var file = input.files[0];
 		var reader = new FileReader();
 		reader.onload = function(e) {
-		  var dataList = reader.result.split("\n");
-		  var domain;
-		  for (var i = 0; i < dataList.length; ++i ) {
-			var text = dataList[i].trim();
-			if (text == '') continue;
+			contextMenuForIntent.items = Intent.parserIntentData(reader.result);
 			
-			if (text.charAt(0) == '#') {
-				domain = text.replace('#', '');
-				intentCandidates[domain] = { 
-					name: domain, 
-					items: {}
-				};
-			} else if (domain != null) {
-				intentCandidates[domain]['items'][text] = { name: text };
-			}
-		  }
-		  
- 		  console.log(intentCandidates);
-		  
-		  if (dataList.length > 0) {
-			  $('#intentDataLoadButton').removeClass('unsatisfied');
-			  $('#intentDataLoadButton').addClass('satisfied');
-		  }
+			localStorage.setItem('intent', reader.result);
+			$('#intentDataLoadButton').removeClass('unsatisfied');
+			$('#intentDataLoadButton').addClass('satisfied');
 		}
 
 		reader.readAsText(file);
 		input.value = null;
 	}
 
+	function insertString(text, headIdx, tailIdx, str) {
+		var head = text.substring(0, headIdx);
+		var tail = text.substring(tailIdx);
+		return head + str + tail;
+	};
+	
 	function getSelectionStart(input) {
 		if (input.createTextRange) {
 			var r = document.selection.createRange().duplicate();
@@ -206,15 +176,10 @@
 		var file = input.files[0];
 		var reader = new FileReader();
 		reader.onload = function(e) {
-		  var dataList = reader.result.split("\n");
-		  var raw, tagged;
-		  for (var i = 0; i < dataList.length; ++i ) {
-			var text = dataList[i].trim();
-			if (text == '') continue;			
-			
-			var texts = text.split(',');
-			addListItem(texts[0], texts[1]);
-		  }
+			var utterances = Utterance.importFromCSV(reader.result);
+			for (var i = 0; i < utterances.length; ++i) {
+				addListItem(utterances[i]['raw'], utterances[i]['tagged']);
+			}
 		}
 
 		reader.readAsText(file, 'euc-kr');
@@ -222,17 +187,19 @@
 	}
 
 	function exportUtteranceData() {
-		var text = '';
+		var utterances = [];
 		var items = $('#selectable')[0].children;
 		for (var i = 0; i < items.length; ++i) {
 			var raw = items[i].children[0].innerText;
 			var tagged = items[i].children[1].innerText;
-			if (raw != '' || tagged != '') {
-				text += raw + ',' + tagged + '\n';
-			}
+			utterances.push({
+				'raw' : raw,
+				'tagged' : tagged
+			})
 		}
-		
-		var file = new File([text], '', { type: "text/plain;charset=utf-8" });
+
+		var csv = Utterance.exportToCSV(utterances);
+		var file = new File([csv], '', { type: "text/plain;charset=utf-8" });
 		saveAs(file, 'utterance_data.csv');
 	}
 	
@@ -243,7 +210,7 @@
 	</script>
 </head>
 
-<body>
+<body onload="init()">
 	<input type="file" class="hide" id="slotDataInput" onchange="onSlotFileUploaded(this)"/>
 	<input type="file" class="hide" id="intentDataInput" onchange="onIntentFileUploaded(this)"/>
 	<input type="file" class="hide" id="inputImport" onchange="onUntteranceDataImported(this)"/>
@@ -252,8 +219,8 @@
 		<h1 id="title">Utterance Annotator</h1>
 		
 		<div id="inputArea">
-			<input type="text" id="inputRaw" oninput="onRawInputChanged(this)" placeholder="Input your utterance"/><br/>
-			<input type="text" id="inputTagged" class="context-menu-one" placeholder="Annotate your utterance with slot, intent and domain" oninput="onTaggedInputChanged(this)"/>
+			<input type="text" id="inputRaw" oninput="onRawInputChanged(this)" placeholder="Input an utterance"/><br/>
+			<input type="text" id="inputTagged" class="context-menu-one" placeholder="Annotate an utterance with tag" oninput="onTaggedInputChanged(this)"/>
 
 		</div>
 		
@@ -265,10 +232,10 @@
 	
 	<div id="utteranceArea" class="center">
 		<div id="utteranceDataControlArea">
-			<button class="ui-button ui-widget ui-corner-all" onclick="addListItem()">Add</button>
-			<button class="ui-button ui-widget ui-corner-all" onclick="deleteAllItems()">Clear</button>
-			<button class="ui-button ui-widget ui-corner-all" onclick="triggerClickEvent('inputImport')">Import</button>
-			<button class="ui-button ui-widget ui-corner-all" onclick="exportUtteranceData()">Export</button>
+			<button onclick="addListItem()">Add</button>
+			<button onclick="deleteAllItems()">Clear</button>
+			<button onclick="triggerClickEvent('inputImport')">Import</button>
+			<button onclick="exportUtteranceData()">Export</button>
 		</div>
 	
 		<ol id="selectable">

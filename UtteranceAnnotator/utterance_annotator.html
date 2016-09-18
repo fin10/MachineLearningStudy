@@ -15,7 +15,8 @@
 	<script src="./utterance.js"></script>
 	
 	<script>
-	function init() {
+	function onBodyLoaded() {
+		console.log('onBodyLoaded');
 		var slot = localStorage.getItem('slot');
 		if (slot != null) {
 			contextMenuForSlot.items = Slot.parseSlotData(slot);
@@ -29,6 +30,33 @@
 			$('#intentDataLoadButton').removeClass('unsatisfied');
 			$('#intentDataLoadButton').addClass('satisfied');
 		}
+		
+		var utterances = localStorage.getItem('utterances');
+		if (utterances != null) {
+			var items = Utterance.importFromCSV(utterances);
+			for (var i = 0; i < items.length; ++i) {
+				addListItem(items[i]['raw'], items[i]['tagged']);
+			}
+		} else {
+			addListItem();
+		}
+	}
+
+	function onBodyUnloaded() {
+		console.log('onBodyUnloaded');
+		var utterances = [];
+		var items = $('#selectable')[0].children;
+		for (var i = 0; i < items.length; ++i) {
+			var raw = items[i].children[0].innerText;
+			var tagged = items[i].children[1].innerText;
+			utterances.push({
+				'raw' : raw,
+				'tagged' : tagged
+			})
+		}
+
+		var csv = Utterance.exportToCSV(utterances);
+		localStorage.setItem('utterances', csv);
 	}
 	
 	var contextMenuForSlot = {
@@ -114,7 +142,7 @@
 		var file = input.files[0];
 		var reader = new FileReader();
 		reader.onload = function(e) {
-			contextMenuForSlot.items = Slot.parserSlotData(reader.result);
+			contextMenuForSlot.items = Slot.parseSlotData(reader.result);
 
 			localStorage.setItem('slot', reader.result);
 			$('#slotDataLoadButton').removeClass('unsatisfied');
@@ -129,7 +157,7 @@
 		var file = input.files[0];
 		var reader = new FileReader();
 		reader.onload = function(e) {
-			contextMenuForIntent.items = Intent.parserIntentData(reader.result);
+			contextMenuForIntent.items = Intent.parseIntentData(reader.result);
 			
 			localStorage.setItem('intent', reader.result);
 			$('#intentDataLoadButton').removeClass('unsatisfied');
@@ -210,7 +238,7 @@
 	</script>
 </head>
 
-<body onload="init()">
+<body onload="onBodyLoaded()" onunload="onBodyUnloaded()">
 	<input type="file" class="hide" id="slotDataInput" onchange="onSlotFileUploaded(this)"/>
 	<input type="file" class="hide" id="intentDataInput" onchange="onIntentFileUploaded(this)"/>
 	<input type="file" class="hide" id="inputImport" onchange="onUntteranceDataImported(this)"/>
@@ -239,7 +267,6 @@
 		</div>
 	
 		<ol id="selectable">
-			<li class="ui-widget-content ui-selected"><span class="list-item-raw"></span><span class="list-item-tagged"></span></li>
 		</ol>
 	</div>
 	

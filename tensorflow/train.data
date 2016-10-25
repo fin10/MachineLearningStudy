@@ -1,0 +1,2 @@
+gallery ./domain_gallery.train ./domain_gallery.test
+clock ./domain_clock.train ./domain_clock.test

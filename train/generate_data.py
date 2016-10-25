@@ -1,5 +1,6 @@
 import argparse
-import re;
+import re
+import random
 
 alternatePattern = re.compile('\([ <>a-zA-Z0-9\|]+\)')
 replacePattern = re.compile('<[-_a-zA-Z0-9]+>')
@@ -31,12 +32,10 @@ def replace(text, slots, output):
 
 parser = argparse.ArgumentParser()
 parser.add_argument('input', help='input file')
+parser.add_argument('count', type=int, help='count of test data')
 args = parser.parse_args()
 
-input = open(args.input, 'r')
-output = open(args.input + '.out', 'w')
-
-try:
+with open(args.input, 'r') as input:
     result = []
     result2 = []
     for line in input:
@@ -47,9 +46,14 @@ try:
             slots = re.findall(replacePattern, item)
             replace(item, slots, result2)
         
-    output.write('\n'.join(result2))
-    print('input: %s\n Utterance geneated: %d' % (args.input, len(result2)))
+    random.shuffle(result2)
+    train = result2[args.count:]
+    test = result2[:args.count]
     
-finally:
-    input.close()
-
+    with open((args.input) + '.train', 'w') as output:
+        output.write('\n'.join(train))
+        
+    with open((args.input) + '.test', 'w') as output:
+        output.write('\n'.join(test))
+        
+    print('input: %s\nUtterance geneated: %d for training, %d for test' % (args.input, len(train), len(test)))

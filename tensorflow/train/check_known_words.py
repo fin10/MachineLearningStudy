@@ -1,8 +1,8 @@
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('w2v', help='input file for pretrained vocabulary vectors by word2vec')
-parser.add_argument('input', help='input file to check words')
+parser.add_argument('w2v', help='input a file for pretrained vocabulary vectors by word2vec')
+parser.add_argument('input', help='input a file to check words')
 args = parser.parse_args()
 
 voca = dict()

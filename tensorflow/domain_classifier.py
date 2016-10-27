@@ -4,18 +4,22 @@ import random
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--word2vec', help='input file for pretrained vocabulary vectors by word2vec')
-parser.add_argument('--train', help='input file for training data')
+parser.add_argument('word2vec', help='input a file for pretrained vocabulary vectors by word2vec')
+parser.add_argument('train', help='input a file for training data')
 args = parser.parse_args()
 
 voca = dict()
+embedding_size = -1
 with open(args.word2vec, 'r') as f:
     voca = eval(f.read())
-    
-for word in voca.items():
-    voca[word[0]] = np.frombuffer(word[1], dtype=np.float32)
+    for word in voca.items():
+        voca[word[0]] = np.frombuffer(word[1], dtype=np.float32)
+        if embedding_size == -1:
+            embedding_size = len(voca[word[0]])
 
-domains = ['unknown']
+print('embedding size:%d' % embedding_size)
+
+domains = []
 train_data = []
 test_data = []
 
@@ -24,10 +28,10 @@ with open(args.train, 'r') as f:
         input = line.split()
         domains.append(input[0])
         with open(input[1], 'r') as train_file:
-            train_data += [[d.strip().lower(), domains.index(input[0])] for d in train_file]
+            train_data += [[sentence.strip().lower(), domains.index(input[0])] for sentence in train_file]
 
         with open(input[2], 'r') as test_file:
-            test_data += [[d.strip().lower(), domains.index(input[0])] for d in test_file]
+            test_data += [[sentence.strip().lower(), domains.index(input[0])] for sentence in test_file]
             
     random.shuffle(train_data)
     random.shuffle(test_data)
@@ -54,7 +58,7 @@ label_count = len(domains)
 lstm_size = 128
 batch_size = 5000
 test_size = len(test_data)
-epoch_size = 5
+epoch_size = 2
 
 batch = []
 labels = np.zeros([batch_size, 1, label_count], dtype=np.int)
@@ -70,23 +74,25 @@ for i in range(test_size):
     batch_for_test.append([voca[word] for word in test_data[i][0].split()])
     labels_for_test[i][0][test_data[i][1]] = 1
 
-longest_length = 0
-for d in batch:
-    if longest_length < len(d):
-        longest_length = len(d)
-
-for d in batch_for_test:
-    if longest_length < len(d):
-        longest_length = len(d)
-        
-print('longest:%d' % longest_length)
-
-for d in batch:
-    d.extend([np.zeros(128, dtype=np.float32) for _ in range(longest_length - len(d))])
-
-for d in batch_for_test:
-    d.extend([np.zeros(128, dtype=np.float32) for _ in range(longest_length - len(d))])
+def find_longest_length(items):
+    longest_length = 0
+    for item in items:
+        length = len(item)
+        if longest_length < length:
+            longest_length = length
+            
+    return longest_length
     
+longest_length = find_longest_length(batch + batch_for_test)
+print('longest_length:%d' % longest_length)
+
+def extend(items, size):
+    for item in items:
+        item.extend([np.zeros(embedding_size, dtype=np.float32) for _ in range(size - len(item))])
+
+extend(batch, longest_length)
+extend(batch_for_test, longest_length)        
+
 def init_weights(shape):
     return tf.Variable(tf.random_normal(shape, stddev=0.01))
 
@@ -98,7 +104,7 @@ def model(X, W, B, lstm_size, step_size):
 
     return tf.matmul(outputs[-1], W) + B, lstm.state_size # State size to initialize the stat
 
-X = tf.placeholder("float", [None, 128])
+X = tf.placeholder("float", [None, embedding_size])
 Y = tf.placeholder("float", [None, label_count])
 
 W = init_weights([lstm_size, label_count])
@@ -128,5 +134,5 @@ with tf.Session() as sess:
             if result == correct:
                 count += 1
             else:
-                print('%s result:%s' % (test_data[j], result))
+                print('Matching failed: %s result:%s' % (test_data[j], result))
         print('score:%d/%d' % (count, test_size))

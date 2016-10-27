@@ -31,8 +31,8 @@ def replace(text, slots, output):
         return
 
 parser = argparse.ArgumentParser()
-parser.add_argument('input', help='input file')
-parser.add_argument('count', type=int, help='count of test data')
+parser.add_argument('input', help='Input a grammar file')
+parser.add_argument('number', type=int, help='Number of test data')
 args = parser.parse_args()
 
 with open(args.input, 'r') as input:
@@ -47,8 +47,8 @@ with open(args.input, 'r') as input:
             replace(item, slots, result2)
         
     random.shuffle(result2)
-    train = result2[args.count:]
-    test = result2[:args.count]
+    train = result2[args.number:]
+    test = result2[:args.number]
     
     with open((args.input) + '.train', 'w') as output:
         output.write('\n'.join(train))

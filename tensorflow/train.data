@@ -1,2 +1,2 @@
-gallery ./domain_gallery.train ./domain_gallery.test
-clock ./domain_clock.train ./domain_clock.test
+gallery ./train/domain_gallery.train ./train/domain_gallery.test
+clock ./train/domain_clock.train ./train/domain_clock.test

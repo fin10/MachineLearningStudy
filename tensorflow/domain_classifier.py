@@ -60,18 +60,33 @@ batch_size = 5000
 test_size = len(test_data)
 epoch_size = 2
 
+unknown = np.zeros([embedding_size], dtype=np.float32)
+unknown.fill(-1)
+
 batch = []
 labels = np.zeros([batch_size, 1, label_count], dtype=np.int)
 
 for i in range(batch_size):
-    batch.append([voca[word] for word in train_data[i][0].split()])
+    sentence = []
+    for word in train_data[i][0].split():
+        if word in voca:
+            sentence.append(voca[word])
+        else:
+            sentence.append(unknown)
+    batch.append(sentence)
     labels[i][0][train_data[i][1]] = 1
 
 batch_for_test = []
 labels_for_test = np.zeros([test_size, 1, label_count], dtype=np.int)
 
 for i in range(test_size):
-    batch_for_test.append([voca[word] for word in test_data[i][0].split()])
+    sentence = []
+    for word in test_data[i][0].split():
+        if word in voca:
+            sentence.append(voca[word])
+        else:
+            sentence.append(unknown)
+    batch_for_test.append(sentence)
     labels_for_test[i][0][test_data[i][1]] = 1
 
 def find_longest_length(items):
@@ -116,6 +131,7 @@ cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(py_x, Y))
 train_op = tf.train.RMSPropOptimizer(0.001, 0.9).minimize(cost)
 predict_op = tf.argmax(py_x, 1)
 
+failed_list = []
 with tf.Session() as sess:
     print('initializing...')
     tf.initialize_all_variables().run()
@@ -134,5 +150,10 @@ with tf.Session() as sess:
             if result == correct:
                 count += 1
             else:
-                print('Matching failed: %s result:%s' % (test_data[j], result))
+                failed_list.append('Matching failed: %s result:%s' % (test_data[j], result))
         print('score:%d/%d' % (count, test_size))
+
+            
+with open('matching_failed.out', 'w') as f:
+    f.write('\n'.join(failed_list))
+            

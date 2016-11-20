@@ -1,2 +1,2 @@
-(I want to |I wanna |could you |)(search|find|show) (a photo|photos|a image|images|a picture|pictures)( taken|)( in <location>|)( with <person>|))
-(I want to |I wanna |could you |)share this (photo|image|picture) (to <person>) via <application>
+(I want to |I wanna |could you |)(search|find|show) (a photo|photos|a image|images|a picture|pictures)( taken|)( in <location>|)( with <person>|)
+(I want to |I wanna |could you |)share this (photo|image|picture) (to {<person>}[to_person]) via {<application>}[share_via]

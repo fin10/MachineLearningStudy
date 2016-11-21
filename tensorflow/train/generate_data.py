@@ -40,7 +40,7 @@ def replace(text, entities, output):
 def extract_iob(input):
     uttr = []
     iob = []
-    pattern = re.compile('(\S+)/([bB|iI-]\S+)')
+    pattern = re.compile('(\S+)/([b|i-]\S+)')
     for word in input.split(' '):
         found = re.findall(pattern, word)
         if not found:
@@ -79,7 +79,7 @@ with open(args.input, 'r') as input:
             words = slot[1]
             name = slot[2]
             word = words.split(' ')
-            ret = ' '.join(['{0}/{1}-{2}'.format(word[i], i == 0 and 'B' or 'I', name) for i in range(len(word))])
+            ret = ' '.join(['{0}/{1}-{2}'.format(word[i], i == 0 and 'b' or 'i', name) for i in range(len(word))])
             item = item.replace(slot[0], ret)
         result3.append(item)
 

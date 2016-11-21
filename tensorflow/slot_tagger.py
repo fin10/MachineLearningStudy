@@ -35,49 +35,45 @@ def init_word_embedding(path):
 
 
 def init_training_data(data):
-    domains = []
-    train_data = []
-    test_data = []
-    for domain in data:
-        domains.append(domain['domain'])
-        with open(domain['train'], 'r') as train_file:
-            train = [[sentence['uttr'].strip().lower(), domains.index(domain['domain'])] for sentence in
-                     json.load(train_file)]
-        with open(domain['test'], 'r') as test_file:
-            test = [[sentence['uttr'].strip().lower(), domains.index(domain['domain'])] for sentence in
-                    json.load(test_file)]
-        print('[%s] train: %d, test: %d' % (domain['domain'], len(train), len(test)))
-        train_data += train
-        test_data += test
+    slots = ['o']
+    for slot in data['slots']:
+        slots.append('b-' + slot)
+        slots.append('i-' + slot)
+
+    with open(data['train'], 'r') as train_file:
+        train_data = [[sentence['raw'].strip().lower(), sentence['iob']] for sentence in json.load(train_file)]
+    with open(data['test'], 'r') as test_file:
+        test_data = [[sentence['raw'].strip().lower(), sentence['iob']] for sentence in json.load(test_file)]
+
+    print('slots: %s' % slots)
+    print('train: %d, test: %d' % (len(train_data), len(test_data)))
     random.shuffle(train_data)
     random.shuffle(test_data)
 
-    return domains, train_data, test_data
+    return slots, train_data, test_data
 
 
-word_embedding_info, domain_infos = parse_config(args.train)
+word_embedding_info, training_data = parse_config(args.train)
 print('-- Config --')
 print('Word embedding file path: %s' % word_embedding_info)
-print('Domains: %d' % len(domain_infos))
 
 print('-- Environment --')
 voca, embedding_dimension = init_word_embedding(word_embedding_info)
 print('Word embedding dimension: %d' % embedding_dimension)
-domains, train_data, test_data = init_training_data(domain_infos)
+slots, train_data, test_data = init_training_data(training_data)
 
 LSTM_SIZE = 128
-BATCH_SIZE = 3000
+BATCH_SIZE = 10000
 EPOCH_SIZE = 2
-label_count = len(domains)
 test_count = len(test_data)
 
 UNK = np.zeros([embedding_dimension], dtype=np.float32)
 UNK.fill(-1)
 
 
-def init_batch(data, batch_size, label_count):
+def init_batch(data, batch_size):
     batch = []
-    labels = np.zeros([batch_size, label_count], dtype=np.int)
+    labels = []
 
     for i in range(batch_size):
         sentence = []
@@ -86,8 +82,18 @@ def init_batch(data, batch_size, label_count):
                 sentence.append(voca[word])
             else:
                 sentence.append(UNK)
+
+        label = []
+        for tag in data[i][1].split():
+            value = np.zeros([len(slots)], dtype=np.float32)
+            value[slots.index(tag)] = 1
+            label.append(value)
+
+        if len(label) is not len(sentence):
+            raise Exception('not matching: %s' % data[i])
+
         batch.append(sentence)
-        labels[i][data[i][1]] = 1
+        labels.append(label)
 
     return batch, labels
 
@@ -102,18 +108,20 @@ def find_longest_length(items):
     return longest_length
 
 
-def extend(items, size):
+def extend(items, size, dimension):
     for item in items:
-        item.extend([np.zeros(embedding_dimension, dtype=np.float32) for _ in range(size - len(item))])
+        item.extend([np.zeros(dimension, dtype=np.float32) for _ in range(size - len(item))])
 
 
-batch_for_train, labels_for_train = init_batch(train_data, BATCH_SIZE, label_count)
-batch_for_test, labels_for_test = init_batch(test_data, test_count, label_count)
+batch_for_train, labels_for_train = init_batch(train_data, BATCH_SIZE)
+batch_for_test, labels_for_test = init_batch(test_data, test_count)
 longest_length = find_longest_length(batch_for_train + batch_for_test)
 print('longest length:%d' % longest_length)
 
-extend(batch_for_train, longest_length)
-extend(batch_for_test, longest_length)
+extend(batch_for_train, longest_length, embedding_dimension)
+extend(labels_for_train, longest_length, len(slots))
+extend(batch_for_test, longest_length, embedding_dimension)
+extend(labels_for_test, longest_length, len(slots))
 
 
 def init_weights(shape):
@@ -124,19 +132,19 @@ def model(X, W, B, lstm_size, step_size):
     X_split = tf.split(0, step_size, X)
 
     lstm = tf.nn.rnn_cell.BasicLSTMCell(lstm_size, forget_bias=1.0, state_is_tuple=True)
-    outputs, _states = tf.nn.rnn(lstm, X_split, dtype=tf.float32)
+    outputs, _state = tf.nn.rnn(lstm, X_split, dtype=tf.float32)
 
-    return tf.matmul(outputs[-1], W) + B, lstm.state_size
+    mat = [tf.matmul(outputs[i], W[i]) + B[i] for i in range(step_size)]
+    return tf.reshape(tf.concat(1, mat), [-1, len(slots)])
 
 
 X = tf.placeholder("float", [None, embedding_dimension])
-Y = tf.placeholder("float", [label_count])
+Y = tf.placeholder("float", [None, len(slots)])
 
-W = init_weights([LSTM_SIZE, label_count])
-B = init_weights([label_count])
+W = [init_weights([LSTM_SIZE, len(slots)]) for _ in range(longest_length)]
+B = [init_weights([len(slots)]) for _ in range(longest_length)]
 
-py_x, state_size = model(X, W, B, LSTM_SIZE, longest_length)
-
+py_x = model(X, W, B, LSTM_SIZE, longest_length)
 cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(py_x, Y))
 train_op = tf.train.RMSPropOptimizer(0.001, 0.9).minimize(cost)
 predict_op = tf.argmax(py_x, 1)
@@ -157,7 +165,7 @@ with tf.Session() as sess:
             if (i % 1000) == 999:
                 print('  loop %d' % (i + 1))
 
-        model_path = saver.save(sess, './domain_classifier_model.ckpt', global_step=(epoch + 1))
+        model_path = saver.save(sess, './slot_tagger_model.ckpt', global_step=(epoch + 1))
         print('  model saved in file: %s' % model_path)
 
         print('testing...')
@@ -166,12 +174,12 @@ with tf.Session() as sess:
         count = 0
         for i in range(len(batch_for_test)):
             result = sess.run(predict_op, feed_dict={X: batch_for_test[i]})
-            correct = np.argmax(labels_for_test[i], axis=0)
-            if result == correct:
+            correct = np.argmax(labels_for_test[i], axis=1)
+            if all(result[i] == correct[i] for i in range(len(test_data[i][1].split()))):
                 count += 1
             else:
-                failed_list.append('matching_failed: %s %s' % (test_data[i], result))
+                failed_list.append('matching_failed: %s %s, ret:%s' % (test_data[i], correct, result))
         print('  score: %s (%d/%d)' % ('{:.2%}'.format(count / len(batch_for_test)), count, len(batch_for_test)))
 
-    with open('matching_failed.out', 'w') as f:
+    with open('slot_matching_failed.out', 'w') as f:
         f.write('\n'.join(failed_list))

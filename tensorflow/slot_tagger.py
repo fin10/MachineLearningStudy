@@ -19,7 +19,7 @@ import json
 def parse_config(file_path):
     with open(file_path, 'r') as f:
         config = json.loads(f.read())
-    return config['word_embedding'], config['training_data']
+    return config['word_embedding'], config['training_data'], config['epoch']
 
 
 def init_word_embedding(path):
@@ -41,13 +41,13 @@ def init_training_data(data):
         slots.append('i-' + slot)
 
     with open(data['train'], 'r') as train_file:
-        train_data = [[sentence['raw'].strip().lower(), sentence['iob'], sentence['length']]
+        train_data = [[sentence['uttr'].strip().lower(), sentence['iob'], sentence['length']]
                       for sentence in json.load(train_file)]
     with open(data['test'], 'r') as test_file:
-        test_data = [[sentence['raw'].strip().lower(), sentence['iob'], sentence['length']]
+        test_data = [[sentence['uttr'].strip().lower(), sentence['iob'], sentence['length']]
                      for sentence in json.load(test_file)]
 
-    print('slots: %s' % slots)
+    print('slots: %s' % len(slots))
     print('train: %d, test: %d' % (len(train_data), len(test_data)))
     random.shuffle(train_data)
     random.shuffle(test_data)
@@ -55,7 +55,7 @@ def init_training_data(data):
     return slots, train_data, test_data
 
 
-word_embedding_info, training_data = parse_config(args.train)
+word_embedding_info, training_data, epoch_size = parse_config(args.train)
 print('-- Config --')
 print('Word embedding file path: %s' % word_embedding_info)
 
@@ -65,9 +65,12 @@ print('Word embedding dimension: %d' % embedding_dimension)
 slots, train_data, test_data = init_training_data(training_data)
 
 LSTM_SIZE = 128
-BATCH_SIZE = 10000
-EPOCH_SIZE = 2
+BATCH_SIZE = len(train_data)
+EPOCH_SIZE = epoch_size
 test_count = len(test_data)
+
+print('LSTM Size: %d' % LSTM_SIZE)
+print('Epoch Size: %d' % EPOCH_SIZE)
 
 UNK = np.zeros([embedding_dimension], dtype=np.float32)
 UNK.fill(-1)

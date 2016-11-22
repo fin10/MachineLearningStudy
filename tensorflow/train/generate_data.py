@@ -41,7 +41,7 @@ def extract_iob(input):
     uttr = []
     iob = []
     pattern = re.compile('(\S+)/([b|i-]\S+)')
-    for word in input.split(' '):
+    for word in input.split():
         found = re.findall(pattern, word)
         if not found:
             uttr.append(word)
@@ -50,7 +50,7 @@ def extract_iob(input):
             uttr.append(found[0][0])
             iob.append(found[0][1])
 
-    return ' '.join(uttr), ' '.join(iob)
+    return ' '.join(uttr), ' '.join(iob), len(uttr)
 
 
 with open(args.input, 'r') as input:
@@ -87,7 +87,7 @@ with open(args.input, 'r') as input:
     for item in result3:
         data = dict()
         data['raw'] = item
-        data['uttr'], data['iob'] = extract_iob(item)
+        data['uttr'], data['iob'], data['length'] = extract_iob(item)
         result4.append(data)
 
     train = result4[:args.num_train]

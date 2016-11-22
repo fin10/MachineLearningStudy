@@ -41,9 +41,11 @@ def init_training_data(data):
         slots.append('i-' + slot)
 
     with open(data['train'], 'r') as train_file:
-        train_data = [[sentence['raw'].strip().lower(), sentence['iob']] for sentence in json.load(train_file)]
+        train_data = [[sentence['raw'].strip().lower(), sentence['iob'], sentence['length']]
+                      for sentence in json.load(train_file)]
     with open(data['test'], 'r') as test_file:
-        test_data = [[sentence['raw'].strip().lower(), sentence['iob']] for sentence in json.load(test_file)]
+        test_data = [[sentence['raw'].strip().lower(), sentence['iob'], sentence['length']]
+                     for sentence in json.load(test_file)]
 
     print('slots: %s' % slots)
     print('train: %d, test: %d' % (len(train_data), len(test_data)))
@@ -175,10 +177,11 @@ with tf.Session() as sess:
         for i in range(len(batch_for_test)):
             result = sess.run(predict_op, feed_dict={X: batch_for_test[i]})
             correct = np.argmax(labels_for_test[i], axis=1)
-            if all(result[i] == correct[i] for i in range(len(test_data[i][1].split()))):
+            length = test_data[i][2]
+            if all(result[i] == correct[i] for i in range(length)):
                 count += 1
             else:
-                failed_list.append('matching_failed: %s %s, ret:%s' % (test_data[i], correct, result))
+                failed_list.append('matching_failed: %s %s, ret:%s' % (test_data[i], correct[:length], result[:length]))
         print('  score: %s (%d/%d)' % ('{:.2%}'.format(count / len(batch_for_test)), count, len(batch_for_test)))
 
     with open('slot_matching_failed.out', 'w') as f:

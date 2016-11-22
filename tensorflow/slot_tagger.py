@@ -14,6 +14,7 @@ import tensorflow as tf
 import numpy as np
 import random
 import json
+from datetime import datetime
 
 
 def parse_config(file_path):
@@ -154,6 +155,8 @@ cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(py_x, Y))
 train_op = tf.train.RMSPropOptimizer(0.001, 0.9).minimize(cost)
 predict_op = tf.argmax(py_x, 1)
 
+score_list = []
+total_time = datetime.now()
 saver = tf.train.Saver()
 
 with tf.Session() as sess:
@@ -165,6 +168,7 @@ with tf.Session() as sess:
     for epoch in range(EPOCH_SIZE):
         print('epoch #%d' % (epoch + 1))
         print('training...')
+        start = datetime.now()
         for i in range(len(batch_for_train)):
             sess.run(train_op, feed_dict={X: batch_for_train[i], Y: labels_for_train[i]})
             if (i % 1000) == 999:
@@ -185,7 +189,18 @@ with tf.Session() as sess:
                 count += 1
             else:
                 failed_list.append('matching_failed: %s %s, ret:%s' % (test_data[i], correct[:length], result[:length]))
-        print('  score: %s (%d/%d)' % ('{:.2%}'.format(count / len(batch_for_test)), count, len(batch_for_test)))
 
-    with open('slot_matching_failed.out', 'w') as f:
-        f.write('\n'.join(failed_list))
+        diff = datetime.now() - start
+        score_msg = 'score: %s (%d/%d) %s' % ('{:.2%}'.format(count / len(batch_for_test)), count, len(batch_for_test),
+                                              diff)
+        print('  %s' % score_msg)
+        score_list.append('#%d %s' % (epoch + 1, score_msg))
+
+        with open('slot_tagger.failed', 'w') as f:
+            f.write('\n'.join(failed_list))
+
+print('Total: %s' % (datetime.now() - total_time))
+
+with open('slot_tagger.score', 'w') as f:
+    f.write('\n'.join(score_list))
+    f.write('\n\nTotal: %s' % (datetime.now() - total_time))

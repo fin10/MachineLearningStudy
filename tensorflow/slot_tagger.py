@@ -12,12 +12,113 @@ if args.train is None and args.test is None:
 
 import tensorflow as tf
 import numpy as np
-import random
 import json
-from datetime import datetime
+import random
+import functools
 
 
-def parse_config(file_path):
+def lazy_property(function):
+    attribute = '_' + function.__name__
+
+    @property
+    @functools.wraps(function)
+    def wrapper(self):
+        if not hasattr(self, attribute):
+            setattr(self, attribute, function(self))
+        return getattr(self, attribute)
+
+    return wrapper
+
+
+class Dataset:
+    def __init__(self, data=None, target=None):
+        self._data = data
+        self._target = target
+
+    @property
+    def data(self):
+        if self._data is None:
+            self._data = []
+        return self._data
+
+    @property
+    def target(self):
+        if self._target is None:
+            self._target = []
+        return self._target
+
+    @property
+    def length(self):
+        return len(self.data)
+
+    def add(self, data, target):
+        self.data.append(data)
+        self.target.append(target)
+
+    def sample(self, num):
+        indexes = random.sample(range(num), num)
+        new_data = list(map(lambda x: self.data[x], indexes))
+        new_target = list(map(lambda x: self.target[x], indexes))
+        return Dataset(data=new_data, target=new_target)
+
+
+class SlotFillingModel:
+    def __init__(self, data, target, weight, bias, num_neurons, num_layers, dropout):
+        self._data = data
+        self._target = target
+        self._weight = weight
+        self._bias = bias
+        self._num_neurons = num_neurons
+        self._num_layers = num_layers
+        self._dropout = dropout
+        self.prediction
+        self.train_op
+        self.test_op
+
+    @staticmethod
+    def length(sequence):
+        used = tf.sign(tf.reduce_max(tf.abs(sequence), reduction_indices=2))
+        length = tf.reduce_sum(used, reduction_indices=1)
+        return tf.cast(length, tf.int32)
+
+    @lazy_property
+    def prediction(self):
+        # Recurrent network.
+        cell = tf.nn.rnn_cell.GRUCell(self._num_neurons)
+        cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=self._dropout)
+        cell = tf.nn.rnn_cell.MultiRNNCell([cell] * self._num_layers)
+        output, _ = tf.nn.dynamic_rnn(cell,
+                                      self._data,
+                                      sequence_length=self.length(self._data),
+                                      dtype=tf.float32)
+
+        # Softmax layer.
+        num_cell = int(self._target.get_shape()[1])
+        num_classes = int(self._target.get_shape()[2])
+
+        # Flatten to apply same weights to all time steps.
+        output = tf.reshape(output, [-1, self._num_neurons])
+        prediction = tf.nn.softmax(tf.matmul(output, self._weight) + self._bias)
+        prediction = tf.reshape(prediction, [-1, num_cell, num_classes])
+        return prediction
+
+    @lazy_property
+    def train_op(self):
+        cross_entropy = -tf.reduce_sum(self._target * tf.log(self.prediction), [1, 2])
+        cross_entropy = tf.reduce_mean(cross_entropy)
+
+        learning_rate = 0.003
+        optimizer = tf.train.RMSPropOptimizer(learning_rate)
+        train_op = optimizer.minimize(cross_entropy)
+        return train_op
+
+    @lazy_property
+    def test_op(self):
+        test_op = tf.not_equal(tf.argmax(self._target, 2), tf.argmax(self.prediction, 2))
+        return tf.reduce_mean(tf.cast(test_op, tf.float32))
+
+
+def read_config(file_path):
     with open(file_path, 'r') as f:
         config = json.loads(f.read())
     return config['word_embedding'], config['training_data'], config['epoch']
@@ -35,172 +136,107 @@ def init_word_embedding(path):
     return voca, dimension
 
 
-def init_training_data(data):
+def transform_dataset(items, slots, voca):
+    dataset = Dataset()
+    missings = []
+    num_slot = len(slots)
+
+    unk = np.zeros([embedding_dimension], dtype=np.float32)
+    unk.fill(-1)
+
+    for item in items:
+        vectors = []
+        for word in item[0].split():
+            if word in voca:
+                vectors.append(voca[word])
+            else:
+                vectors.append(unk)
+                missings.append(word)
+
+        labels = []
+        for tag in item[1].split():
+            value = np.zeros([num_slot], dtype=np.float32)
+            value[slots.index(tag)] = 1
+            labels.append(value)
+
+        if len(vectors) is not len(labels):
+            raise Exception('not matching: %s' % item)
+
+        dataset.add(vectors, labels)
+
+    return dataset, missings
+
+
+def read_dataset(info, voca):
     slots = ['o']
-    for slot in data['slots']:
+    for slot in info['slots']:
         slots.append('b-' + slot)
         slots.append('i-' + slot)
 
-    with open(data['train'], 'r') as train_file:
+    with open(info['train'], 'r') as train_file:
         train_data = [[sentence['uttr'].strip().lower(), sentence['iob'], sentence['length']]
                       for sentence in json.load(train_file)]
-    with open(data['test'], 'r') as test_file:
+    with open(info['test'], 'r') as test_file:
         test_data = [[sentence['uttr'].strip().lower(), sentence['iob'], sentence['length']]
                      for sentence in json.load(test_file)]
 
-    print('slots: %s' % len(slots))
-    print('train: %d, test: %d' % (len(train_data), len(test_data)))
-    random.shuffle(train_data)
-    random.shuffle(test_data)
+    train_data, _ = transform_dataset(train_data, slots, voca)
+    test_data, _ = transform_dataset(test_data, slots, voca)
 
     return slots, train_data, test_data
 
 
-word_embedding_info, training_data, epoch_size = parse_config(args.train)
+word_embedding_info, dataset_info, num_epochs = read_config(args.train)
 print('-- Config --')
 print('Word embedding file path: %s' % word_embedding_info)
 
-print('-- Environment --')
 voca, embedding_dimension = init_word_embedding(word_embedding_info)
+slots, train_data, test_data = read_dataset(dataset_info, voca)
+
+num_neurons = 128
+num_layers = 3
+num_classes = len(slots)
+num_train = train_data.length
+num_test = test_data.length
+max_length = 100
+
+for i in range(len(train_data.data)):
+    train_data.data[i] = np.pad(train_data.data[i], [[0, max_length - len(train_data.data[i])], [0, 0]], 'constant')
+    train_data.target[i] = np.pad(train_data.target[i], [[0, max_length - len(train_data.target[i])], [0, 0]],
+                                  'constant')
+
+for i in range(len(test_data.data)):
+    test_data.data[i] = np.pad(test_data.data[i], [[0, max_length - len(test_data.data[i])], [0, 0]], 'constant')
+    test_data.target[i] = np.pad(test_data.target[i], [[0, max_length - len(test_data.target[i])], [0, 0]], 'constant')
+
+print('-- Environment --')
 print('Word embedding dimension: %d' % embedding_dimension)
-slots, train_data, test_data = init_training_data(training_data)
+print('slots: %s' % len(slots))
+print('train: %d, test: %d' % (num_train, num_test))
+print('Neurons: %d' % num_neurons)
+print('Epochs: %d' % num_epochs)
 
-LSTM_SIZE = 128
-BATCH_SIZE = len(train_data)
-EPOCH_SIZE = epoch_size
-test_count = len(test_data)
-
-print('LSTM Size: %d' % LSTM_SIZE)
-print('Epoch Size: %d' % EPOCH_SIZE)
-
-UNK = np.zeros([embedding_dimension], dtype=np.float32)
-UNK.fill(-1)
-
-
-def init_batch(data, batch_size):
-    batch = []
-    labels = []
-
-    for i in range(batch_size):
-        sentence = []
-        for word in data[i][0].split():
-            if word in voca:
-                sentence.append(voca[word])
-            else:
-                sentence.append(UNK)
-
-        label = []
-        for tag in data[i][1].split():
-            value = np.zeros([len(slots)], dtype=np.float32)
-            value[slots.index(tag)] = 1
-            label.append(value)
-
-        if len(label) is not len(sentence):
-            raise Exception('not matching: %s' % data[i])
-
-        batch.append(sentence)
-        labels.append(label)
-
-    return batch, labels
-
-
-def find_longest_length(items):
-    longest_length = 0
-    for item in items:
-        length = len(item)
-        if longest_length < length:
-            longest_length = length
-
-    return longest_length
-
-
-def extend(items, size, dimension):
-    for item in items:
-        item.extend([np.zeros(dimension, dtype=np.float32) for _ in range(size - len(item))])
-
-
-batch_for_train, labels_for_train = init_batch(train_data, BATCH_SIZE)
-batch_for_test, labels_for_test = init_batch(test_data, test_count)
-longest_length = find_longest_length(batch_for_train + batch_for_test)
-print('longest length:%d' % longest_length)
-
-extend(batch_for_train, longest_length, embedding_dimension)
-extend(labels_for_train, longest_length, len(slots))
-extend(batch_for_test, longest_length, embedding_dimension)
-extend(labels_for_test, longest_length, len(slots))
-
-
-def init_weights(shape):
-    return tf.Variable(tf.random_normal(shape, stddev=0.01))
-
-
-def model(X, W, B, lstm_size, step_size):
-    X_split = tf.split(0, step_size, X)
-
-    lstm = tf.nn.rnn_cell.BasicLSTMCell(lstm_size, forget_bias=1.0, state_is_tuple=True)
-    outputs, _state = tf.nn.rnn(lstm, X_split, dtype=tf.float32)
-
-    mat = [tf.matmul(outputs[i], W[i]) + B[i] for i in range(step_size)]
-    return tf.reshape(tf.concat(1, mat), [-1, len(slots)])
-
-
-X = tf.placeholder("float", [None, embedding_dimension])
-Y = tf.placeholder("float", [None, len(slots)])
-
-W = [init_weights([LSTM_SIZE, len(slots)]) for _ in range(longest_length)]
-B = [init_weights([len(slots)]) for _ in range(longest_length)]
-
-py_x = model(X, W, B, LSTM_SIZE, longest_length)
-cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(py_x, Y))
-train_op = tf.train.RMSPropOptimizer(0.001, 0.9).minimize(cost)
-predict_op = tf.argmax(py_x, 1)
-
-score_list = []
-total_time = datetime.now()
-saver = tf.train.Saver()
+print('-- Training --')
+print('initializing...')
+data = tf.placeholder(tf.float32, [None, max_length, embedding_dimension])
+target = tf.placeholder(tf.float32, [None, max_length, num_classes])
+dropout = tf.placeholder(tf.float32)
+weight = tf.Variable(tf.truncated_normal([num_neurons, num_classes], stddev=0.01))
+bias = tf.Variable(tf.constant(0.1, shape=[num_classes]))
+model = SlotFillingModel(data, target, weight, bias, num_neurons, num_layers, dropout)
 
 with tf.Session() as sess:
-    print('-- Training --')
-    print('initializing...')
-    tf.initialize_all_variables().run()
-
-    failed_list = []
-    for epoch in range(EPOCH_SIZE):
-        print('epoch #%d' % (epoch + 1))
+    sess.run(tf.initialize_all_variables())
+    for epoch in range(num_epochs):
+        epoch += 1
+        print('epoch #%d' % epoch)
         print('training...')
-        start = datetime.now()
-        for i in range(len(batch_for_train)):
-            sess.run(train_op, feed_dict={X: batch_for_train[i], Y: labels_for_train[i]})
-            if (i % 1000) == 999:
-                print('  loop %d' % (i + 1))
-
-        model_path = saver.save(sess, './slot_tagger_model.ckpt', global_step=(epoch + 1))
-        print('  model saved in file: %s' % model_path)
+        for i in range(500):
+            train = train_data.sample(10)
+            sess.run(model.train_op, feed_dict={data: train.data, target: train.target, dropout: 0.5})
+            if i % 100 is 99:
+                print('\tbatch %d' % (i + 1))
 
         print('testing...')
-        failed_list.clear()
-        failed_list.append('epoch #%d' % (epoch + 1))
-        count = 0
-        for i in range(len(batch_for_test)):
-            result = sess.run(predict_op, feed_dict={X: batch_for_test[i]})
-            correct = np.argmax(labels_for_test[i], axis=1)
-            length = test_data[i][2]
-            if all(result[i] == correct[i] for i in range(length)):
-                count += 1
-            else:
-                failed_list.append('matching_failed: %s %s, ret:%s' % (test_data[i], correct[:length], result[:length]))
-
-        diff = datetime.now() - start
-        score_msg = 'score: %s (%d/%d) %s' % ('{:.2%}'.format(count / len(batch_for_test)), count, len(batch_for_test),
-                                              diff)
-        print('  %s' % score_msg)
-        score_list.append('#%d %s' % (epoch + 1, score_msg))
-
-        with open('slot_tagger.failed', 'w') as f:
-            f.write('\n'.join(failed_list))
-
-print('Total: %s' % (datetime.now() - total_time))
-
-with open('slot_tagger.score', 'w') as f:
-    f.write('\n'.join(score_list))
-    f.write('\n\nTotal: %s' % (datetime.now() - total_time))
+        score = sess.run(model.test_op, feed_dict={data: test_data.data, target: test_data.target, dropout: 1.0})
+        print('\t%s' % score)

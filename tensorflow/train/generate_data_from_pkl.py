@@ -31,7 +31,7 @@ def parse_data(uttr, named_entity, iob):
         item = dict()
         item['uttr'] = ' '.join(list(map(lambda x: idx2words[x], uttr[i]))).lower() \
             .replace('\'d', 'would').replace('\'s', 'is').replace('\'m', 'am').replace('\'ll', 'will') \
-            .replace('\'re', 'are')
+            .replace('\'re', 'are').replace('st.', 'saint')
         item['named_entity'] = ' '.join(list(map(lambda x: idx2tables[x], named_entity[i]))).lower()
         item['iob'] = ' '.join(list(map(lambda x: idx2labels[x], iob[i]))).lower()
         item['length'] = len(uttr[i])
@@ -47,6 +47,7 @@ idx2labels = invert_dict(dicts['labels2idx'])
 idx2tables = invert_dict(dicts['tables2idx'])
 
 slots = parse_slots(list(idx2labels.values()))
+slots.sort()
 print('slots: %d' % len(slots))
 
 train_data = parse_data(train[0], train[1], train[2])
@@ -54,7 +55,7 @@ test_data = parse_data(test[0], test[1], test[2])
 print('generated train data: %d, test data: %d' % (len(train_data), len(test_data)))
 
 with open(args.input + '.slots', 'w') as output:
-    output.write(json.dumps(slots))
+    output.write('\n'.join(slots))
 
 with open(args.input + '.train', 'w') as output:
     output.write(json.dumps(train_data))

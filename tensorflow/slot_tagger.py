@@ -145,9 +145,9 @@ slots, train_data, test_data = read_dataset(dataset_info, voca)
 num_classes = len(slots)
 num_train = train_data.length
 num_test = test_data.length
-num_neurons = 128
-num_layers = 3
-num_epochs = 1
+num_neurons = 300
+num_layers = 1
+num_epochs = 5
 num_batch = 1000
 max_length = 100
 
@@ -165,7 +165,8 @@ test_data.extend(max_length)
 x = tf.placeholder(tf.float32, [None, max_length, embedding_dimension])
 y = tf.placeholder(tf.float32, [None, max_length, num_classes])
 dropout = tf.placeholder(tf.float32)
-weight = tf.Variable(tf.truncated_normal([num_neurons * 2, num_classes], stddev=0.01))
+weight = tf.Variable(
+    tf.truncated_normal([num_neurons, num_classes], stddev=np.sqrt(2 / np.prod(x.get_shape().as_list()[1:]))))
 bias = tf.Variable(tf.constant(0.1, shape=[num_classes]))
 
 mask = tf.sign(tf.reduce_max(tf.abs(y), reduction_indices=2))
@@ -175,15 +176,13 @@ length = tf.cast(tf.reduce_sum(mask, reduction_indices=1), tf.int32)
 cell = tf.nn.rnn_cell.GRUCell(num_neurons)
 cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=dropout)
 cell = tf.nn.rnn_cell.MultiRNNCell([cell] * num_layers)
-outputs, _ = tf.nn.bidirectional_dynamic_rnn(cell,
-                                             cell,
-                                             x,
-                                             sequence_length=length,
-                                             dtype=tf.float32)
-output = tf.concat(2, outputs)
+outputs, _ = tf.nn.dynamic_rnn(cell,
+                               x,
+                               sequence_length=length,
+                               dtype=tf.float32)
 
 # Flatting
-output = tf.reshape(output, [-1, num_neurons * 2])
+output = tf.reshape(outputs, [-1, num_neurons])
 softmax = tf.nn.softmax(tf.matmul(output, weight) + bias)
 prediction = tf.reshape(softmax, [-1, max_length, num_classes])
 
@@ -191,8 +190,8 @@ cross_entropy = -tf.reduce_sum(y * tf.log(prediction), reduction_indices=2) * ma
 cross_entropy = tf.reduce_sum(cross_entropy, reduction_indices=1) / tf.cast(length, tf.float32)
 cost = tf.reduce_mean(cross_entropy)
 
-learning_rate = 0.003
-train_op = tf.train.RMSPropOptimizer(learning_rate).minimize(cost)
+learning_rate = 0.01
+optimizer = tf.train.RMSPropOptimizer(learning_rate).minimize(cost)
 
 prediction = tf.argmax(prediction, 2)
 target = tf.argmax(y, 2)
@@ -210,13 +209,17 @@ with tf.Session() as sess:
         print('epoch #%d' % epoch)
         print('training...')
         for i in range(num_batch):
-            train = train_data.sample(10)
-            _, cost_output = sess.run([train_op, cost],
+            train = train_data.sample(100)
+            _, cost_output = sess.run([optimizer, cost],
                                       feed_dict={x: train.data,
                                                  y: train.target,
                                                  dropout: 0.5})
             if i % 100 is 99:
                 print('\tbatch %d: cost(%s)' % ((i + 1), cost_output))
+
+            if cost_output < 1.8e-05:
+                print('\tbatch %d: cost(%s)' % ((i + 1), cost_output))
+                break
 
         print('testing...')
         prediction_output, target_output, score_output, length_output = sess.run(
@@ -226,7 +229,7 @@ with tf.Session() as sess:
                        dropout: 1.0})
         print('\tscore: %s' % score_output)
 
-        with open('slot_tagger.result', 'w') as f:
+        with open('slot_tagger.result.{0}'.format(epoch), 'w') as f:
             f.write('epoch #%d, score: %s\n' % (epoch, score_output))
             for i in range(num_test):
                 f.write('%s\n' % test_data.uttr[i])

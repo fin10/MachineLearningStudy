@@ -6,6 +6,20 @@ body {
     text-transform: uppercase;
 }
 
+.round {
+    border-radius: 8px;
+}
+
+.round-box {
+    display: inline-block;
+    background-color: #69D2E7;
+    padding: 5px 10px;
+    border-radius: 18px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    font-size: 12px;
+    color: white;
+}
+
 .gone {
     display: none;
 }
@@ -13,6 +27,7 @@ body {
 header {
     padding: 10px;
     background-color: #FA6900;
+    border-bottom: 8px solid rgba(255,255,255,0.4);
 }
 
 header h2 {
@@ -21,30 +36,102 @@ header h2 {
     letter-spacing: 2px;
 }
 
-#detail-panel {
-    padding: 10px;
-    background-color: #E0E4CC;
-    height: 300px;
+select {
+    padding: 0px 5px;
+    margin: 0px;
+    height: 30px;
+    border-width: 1px;
+    border-radius: 8px;
 }
 
 input {
-    padding: 5px;
-    width: 60%;
+    padding: 0px 10px;
+    margin: 0px;
+    width: 70%;
+    height: 30px;
+    border-width: 0 0 2px 0;
+}
+
+button {
+    padding: 0px 12px;
+    margin: 0px;
+    height: 30px;
+    border-radius: 6px;
+    border-color: rgba(0, 0, 0, 0.2);
+    border-width: 1px;
+    text-transform: uppercase;
+}
+
+#enroll-panel {
+    padding: 10px 10px 0px 10px;
+
+}
+
+#enroll-panel h2 {
+    margin: 0 0 10px 0;
+}
+
+#detail-panel {
+    margin: 10px;
+    padding: 16px;
+    background-color: #E0E4CC;
+    border-radius: 8px;
+}
+
+#detail-panel .title {
+    margin-left: 4px;
+    font-size: 14px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+#detail-panel .info {
+    display: block;
+    margin: 2px 0 12px 4px;
+    font-size: 18px;
+    font-weight: lighter;
+    color: rgba(0, 0, 0, 0.7);
 }
 
 #list-panel {
-    height: 240px;
-    background-color: #F38630;
+    padding: 16px;
+    position: absolute;
+    top: 380px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    overflow: auto;
+    background-color: rgba(243, 134, 48, 1);
 }
 
 #list-panel ul {
     list-style-type: none;
-    margin: 0px;
-    padding: 10px;
+    margin: 8px 0 0 0;
+    padding: 0px;
 }
 
 #list-panel li {
+    padding: 8px;
+    margin-bottom: 6px;
     background-color: white;
-    padding: 10px;
-    border-bottom: 1px solid #9E9E9E;
+    border-radius: 4px;
+    border-color: rgba(255, 255, 255, 0.1);
+    border-width: 3px;
+    border-style: solid;
 }
+
+#list-panel li.selected {
+    border-color: rgba(105,210,231, 0.8);
+}
+
+#list-panel li .domain-info {
+    background-color: rgb(167, 219, 216);
+    margin-bottom: 5px;
+}
+
+#list-panel li .info {
+    font-weight: lighter;
+    font-size: 16px;
+    margin-left: 4px;
+}
+

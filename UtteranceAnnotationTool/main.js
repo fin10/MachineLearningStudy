@@ -12,29 +12,69 @@ var ListPanel = new function() {
         if (element.id == 'list-clear-button') {
             AnnotationTool.clear()
         } else if (element.id == 'list-ul') {
-            AnnotationTool.select(event.target.id)
+            for (i in event.path) {
+                if (event.path[i].localName == 'li') {
+                    AnnotationTool.select(event.path[i].id)
+                    break;
+                }
+            }
         }
     }
 
-    this.addToFront = function(utterance) {
+    var addClass = function(element, clsName) {
+        if (!element.className.includes(clsName)) {
+            element.className += ' ' + clsName
+            element.className = element.className.trim()
+        }
+    }
+
+    var removeClass = function(element, clsName) {
+        if(element != null) {
+            element.className = element.className.replace(new RegExp("(\\s|^)" + clsName + "(\\s|$)"), ' ').trim()
+        }
+    }
+
+    var createListItem = function(model) {
         var li = document.createElement('li')
-        li.id = utterance.getId()
-        li.innerText = utterance.getDomain() + '\n' + utterance.getUtterance() + '\n' + utterance.getIob()
-        list.insertBefore(li, list.firstChild)
+        li.id = model.getId()
+
+        var domain = document.createElement('div')
+        domain.className = 'domain-info round-box'
+        domain.innerText = model.getDomain()
+        li.appendChild(domain)
+
+        var uttr = document.createElement('div')
+        uttr.className = 'info'
+        uttr.innerText = model.getUtterance()
+        li.appendChild(uttr)
+
+        var iob = document.createElement('iob')
+        iob.className = 'info'
+        iob.innerText = model.getIob()
+        li.appendChild(iob)
+
+        return li
+    }
+
+    var updateListItem = function(li, model) {
+        li.children[0].innerText = model.getDomain()
+        li.children[1].innerText = model.getUtterance()
+        li.children[2].innerText = model.getIob()
+    }
+
+    this.addToFront = function(utterance) {
+        list.insertBefore(createListItem(utterance), list.firstChild)
     }
 
     this.addToBack = function(utterance) {
-        var li = document.createElement('li')
-        li.id = utterance.getId()
-        li.innerText = utterance.getDomain() + '\n' + utterance.getUtterance() + '\n' + utterance.getIob()
-        list.appendChild(li)
+        list.appendChild(createListItem(utterance))
     }
 
     this.update = function(utterance) {
         var children = list.children
         for (i in children) {
             if (children[i].id == utterance.getId()) {
-                children[i].innerText = utterance.getDomain() + '\n' + utterance.getUtterance() + '\n' + utterance.getIob()
+                updateListItem(children[i], utterance)
             }
         }
     }
@@ -46,6 +86,14 @@ var ListPanel = new function() {
 
     this.focus = function(id) {
         console.log('[focus] ' + id)
+        removeClass(list.querySelector('.selected'), 'selected')
+
+        for (i in list.children) {
+            if (list.children[i].id == id) {
+                addClass(list.children[i], 'selected')
+                break
+            }
+        }
     }
 }
 
@@ -70,11 +118,11 @@ var EnrollPanel = new function() {
 
 var DetailPanel = new function() {
     var elements = {}
+    var id = -1
 
     this.init = function(domains) {
         elements.panel = document.getElementById('detail-panel')
         elements.domainSelect = document.getElementById('detail-domain-select')
-        elements.idInfo = document.getElementById('detail-id-info')
         elements.sourceInput = document.getElementById('detail-source-input')
         elements.utteranceInfo = document.getElementById('detail-utterance-info')
         elements.iobInfo = document.getElementById('detail-iob-info')
@@ -92,15 +140,15 @@ var DetailPanel = new function() {
     }
 
     this.show = function(uttr) {
+        id = uttr.getId();
         elements.domainSelect.value = uttr.getDomain()
-        elements.idInfo.innerText = uttr.getId()
         elements.sourceInput.value = uttr.getSource()
         elements.utteranceInfo.innerText = uttr.getUtterance()
         elements.iobInfo.innerText = uttr.getIob()
     }
 
     this.getId = function() {
-        return elements.idInfo.innerText
+        return id
     }
 
     this.getDomain = function() {

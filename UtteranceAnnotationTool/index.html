@@ -5,35 +5,28 @@
     <title>CY Utterance Annotation Tool</title>
     <link rel="stylesheet" href="main.css"/>
     <script src="main.js"></script>
+
 </head>
 <body onload="onBodyLoaded()" onunload="onBodyUnloaded()">
 <header>
     <h2 class="uppercase">CY Utterance Annotation Tool</h2>
 </header>
-
 <div id="enroll-panel">
+    <h2>Register an utterance</h2>
     <select id="enroll-domain-select"></select>
     <input id="enroll-source-input" type="text">
     <button id="enroll-enroll-button" onclick="EnrollPanel.onClick()">Enroll</button>
 </div>
 
 <div id="detail-panel">
+    <div class="title uppercase">Utterance</div>
+    <div id="detail-utterance-info" class="info">none</div>
+    <div class="title uppercase">IOB</div>
+    <div id="detail-iob-info" class="info">none</div>
     <select id="detail-domain-select"></select>
-    <div id="detail-id-info"></div>
-    <div>
-        <p>Source</p>
-        <input id="detail-source-input" type="text">
+    <input id="detail-source-input" type="text" class="round">
         <button id="detail-update-button" onclick="DetailPanel.onClick()">Update</button>
     </div>
-    <div>
-        <p>Utterance</p>
-        <div id="detail-utterance-info"></div>
-    </div>
-    <div>
-        <p>IOB</p>
-        <div id="detail-iob-info"></div>
-    </div>
-</div>
 
 <div id="list-panel">
     <button id="list-clear-button" onclick="ListPanel.onClick(this)">Clear</button>

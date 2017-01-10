@@ -2,15 +2,21 @@ document.write('<script src="domain_model.js"></script>')
 document.write('<script src="utterance_model.js"></script>')
 
 var ListPanel = new function() {
-    var list = null
+    var elements = {}
 
     this.init = function() {
-        list = document.getElementById('list-ul')
+        elements.list = document.getElementById('list-ul')
+        elements.count = document.getElementById('list-count')
+        elements.import = document.getElementById('list-import')
     }
 
     this.onClick = function(element, event) {
         if (element.id == 'list-clear-button') {
             AnnotationTool.clear()
+        } else if (element.id == 'list-import-button') {
+            elements.import.click()
+        } else if (element.id == 'list-export-button') {
+            AnnotationTool.export()
         } else if (element.id == 'list-ul') {
             for (i in event.path) {
                 if (event.path[i].localName == 'li') {
@@ -56,22 +62,27 @@ var ListPanel = new function() {
         return li
     }
 
+    var addToBack = function(utterance) {
+        elements.list.appendChild(createListItem(utterance))
+    }
+
     var updateListItem = function(li, model) {
         li.children[0].innerText = model.getDomain()
         li.children[1].innerText = model.getUtterance()
         li.children[2].innerText = model.getIob()
     }
 
-    this.addToFront = function(utterance) {
-        list.insertBefore(createListItem(utterance), list.firstChild)
+    this.setCount = function(count) {
+        elements.count.innerText = count
     }
 
-    this.addToBack = function(utterance) {
-        list.appendChild(createListItem(utterance))
+    this.addToFront = function(utterance) {
+        elements.list.insertBefore(createListItem(utterance), elements.list.firstChild)
+        this.setCount(elements.list.children.length)
     }
 
     this.update = function(utterance) {
-        var children = list.children
+        var children = elements.list.children
         for (i in children) {
             if (children[i].id == utterance.getId()) {
                 updateListItem(children[i], utterance)
@@ -80,17 +91,18 @@ var ListPanel = new function() {
     }
 
     this.updateAll = function(utterances) {
-        while (list.firstChild) list.removeChild(list.firstChild)
-        for (i in utterances) this.addToBack(utterances[i])
+        while (elements.list.firstChild) elements.list.removeChild(elements.list.firstChild)
+        for (i in utterances) addToBack(utterances[i])
+        this.setCount(elements.list.children.length)
     }
 
     this.focus = function(id) {
         console.log('[focus] ' + id)
-        removeClass(list.querySelector('.selected'), 'selected')
+        removeClass(elements.list.querySelector('.selected'), 'selected')
 
-        for (i in list.children) {
-            if (list.children[i].id == id) {
-                addClass(list.children[i], 'selected')
+        for (i in elements.list.children) {
+            if (elements.list.children[i].id == id) {
+                addClass(elements.list.children[i], 'selected')
                 break
             }
         }
@@ -184,13 +196,15 @@ var AnnotationTool = new function() {
         var model = new UtteranceModel()
         model.setDomain(domain)
         model.setSource(source)
-        _utterances.unshift(model)
-        ListPanel.addToFront(model)
-        this.select(model.getId())
+        if (!exist(model)) {
+            _utterances.unshift(model)
+            ListPanel.addToFront(model)
+            this.select(model.getId())
+        }
     }
 
     this.updateUtterance = function(id, domain, source) {
-        var uttr = findUtterance(_utterances, id)
+        var uttr = find(id)
         if (uttr != null) {
             uttr.setDomain(domain)
             uttr.setSource(source)
@@ -200,7 +214,7 @@ var AnnotationTool = new function() {
     }
 
     this.select = function(id) {
-        var uttr = findUtterance(_utterances, id)
+        var uttr = find(id)
         if (uttr != null) {
             DetailPanel.show(uttr)
             ListPanel.focus(id)
@@ -212,10 +226,48 @@ var AnnotationTool = new function() {
         ListPanel.updateAll()
     }
 
-    var findUtterance = function(utterances, id) {
-        for (i in utterances) {
-            if (id == utterances[i].getId()) {
-                return utterances[i]
+    this.import = function(input) {
+        var file = input.files[0]
+		var reader = new FileReader();
+		reader.onload = function(e) {
+    		var utterances = reader.result.split("\n");
+    		for (i in utterances) {
+    		    var uttr = utterances[i].trim()
+    		    if (uttr.length > 0) {
+                    var model = new UtteranceModel()
+                    model.setDomain(file.name)
+                    model.setSource(uttr)
+                    if (!exist(model)) {
+                        _utterances.push(model)
+                    }
+    		    }
+    		}
+
+            ListPanel.updateAll(_utterances)
+		}
+
+		reader.readAsText(file);
+    }
+
+    this.export = function() {
+    }
+
+    var exist = function(model) {
+        var uttr = model.getUtterance()
+        for (i in _utterances) {
+            if (uttr == _utterances[i].getUtterance()) {
+                console.log('[exist] (' + uttr + ') exists.')
+                return true
+            }
+        }
+
+        return false
+    }
+
+    var find = function(id) {
+        for (i in _utterances) {
+            if (id == _utterances[i].getId()) {
+                return _utterances[i]
             }
         }
 

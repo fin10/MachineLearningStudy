@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>CY Utterance Annotation Tool</title>
+    <title>CY Annotation Tool</title>
     <link rel="stylesheet" href="main.css"/>
     <script src="main.js"></script>
 
 </head>
 <body onload="onBodyLoaded()" onunload="onBodyUnloaded()">
 <header>
-    <h2 class="uppercase">CY Utterance Annotation Tool</h2>
+    <h2 class="uppercase">CY Annotation Tool</h2>
 </header>
 <div id="enroll-panel">
     <h2>Register an utterance</h2>
@@ -29,7 +29,13 @@
     </div>
 
 <div id="list-panel">
-    <button id="list-clear-button" onclick="ListPanel.onClick(this)">Clear</button>
+    <div id="list-controls">
+        <input type="file" class="hide" id="list-import" onchange="AnnotationTool.import(this)"/>
+        <div id="list-count">0</div>
+        <button id="list-import-button" onclick="ListPanel.onClick(this)">Import</button>
+        <button id="list-export-button" onclick="ListPanel.onClick(this)">Export</button>
+        <button id="list-clear-button" onclick="ListPanel.onClick(this)">Clear</button>
+    </div>
     <ul id="list-ul" onclick="ListPanel.onClick(this, event)"></ul>
 </div>
 </body>

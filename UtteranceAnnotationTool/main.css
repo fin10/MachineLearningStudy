@@ -20,7 +20,7 @@ body {
     color: white;
 }
 
-.gone {
+.hide {
     display: none;
 }
 
@@ -45,11 +45,7 @@ select {
 }
 
 input {
-    padding: 0px 10px;
-    margin: 0px;
-    width: 70%;
     height: 30px;
-    border-width: 0 0 2px 0;
 }
 
 button {
@@ -71,11 +67,36 @@ button {
     margin: 0 0 10px 0;
 }
 
+#enroll-source-input {
+    width: 50%;
+    padding: 0 4px;
+    margin: 0 8px;
+    border-color: rgba(0, 0, 0, 0.5);
+    border-width: 0 0 1px 0;
+}
+
+#enroll-source-input:focus {
+    outline: none;
+    border-color: rgba(243, 134, 48, 1);
+}
+
 #detail-panel {
     margin: 10px;
     padding: 16px;
     background-color: #E0E4CC;
     border-radius: 8px;
+}
+
+#detail-source-input {
+    width: 50%;
+    padding: 0 8px;
+    margin: 0 4px;
+    border: 1px solid rgba(0, 0, 0, 0.5);
+}
+
+#detail-source-input:focus {
+    outline: none;
+    border-color: rgba(243, 134, 48, 1);
 }
 
 #detail-panel .title {
@@ -104,10 +125,23 @@ button {
     background-color: rgba(243, 134, 48, 1);
 }
 
+#list-controls {
+    margin-bottom: 16px;
+    text-align: end;
+}
+
+#list-count {
+    margin-right: 8px;
+    display: inline;
+    vertical-align: middle;
+    color: rgba(255, 255, 255, 0.8);
+    text-weight: lighter;
+}
+
 #list-panel ul {
     list-style-type: none;
-    margin: 8px 0 0 0;
     padding: 0px;
+    margin: 0px;
 }
 
 #list-panel li {

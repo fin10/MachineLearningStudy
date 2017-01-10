@@ -1,6 +1,6 @@
 function UtteranceModel(data) {
     var _data = (data != null) ? data : {
-        'id' : new Date().getTime(),
+        'id' : new Date().getTime() + '_' + Math.floor((Math.random() * 10000)),
         'domain' : '',
         'source' : '',
         'uttr' : '',

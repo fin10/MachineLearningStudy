@@ -58,6 +58,11 @@ button {
     text-transform: uppercase;
 }
 
+:focus {
+    outline: none;
+    border-color: rgba(243, 134, 48, 1);
+}
+
 #enroll-panel {
     padding: 10px 10px 0px 10px;
 
@@ -75,11 +80,6 @@ button {
     border-width: 0 0 1px 0;
 }
 
-#enroll-source-input:focus {
-    outline: none;
-    border-color: rgba(243, 134, 48, 1);
-}
-
 #detail-panel {
     margin: 10px;
     padding: 16px;
@@ -92,11 +92,6 @@ button {
     padding: 0 8px;
     margin: 0 4px;
     border: 1px solid rgba(0, 0, 0, 0.5);
-}
-
-#detail-source-input:focus {
-    outline: none;
-    border-color: rgba(243, 134, 48, 1);
 }
 
 #detail-panel .title {
@@ -117,7 +112,7 @@ button {
 #list-panel {
     padding: 16px;
     position: absolute;
-    top: 380px;
+    top: 360px;
     left: 0px;
     right: 0px;
     bottom: 0px;

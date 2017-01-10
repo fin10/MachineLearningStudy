@@ -97,7 +97,6 @@ var ListPanel = new function() {
     }
 
     this.focus = function(id) {
-        console.log('[focus] ' + id)
         removeClass(elements.list.querySelector('.selected'), 'selected')
 
         for (i in elements.list.children) {
@@ -186,6 +185,9 @@ var AnnotationTool = new function() {
         DetailPanel.init(_domains)
         ListPanel.init()
         ListPanel.updateAll(_utterances)
+        if (_utterances.length > 0) {
+            this.select(_utterances[0].getId())
+        }
     }
 
     this.save = function() {

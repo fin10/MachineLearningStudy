@@ -71,16 +71,6 @@ var EnrollPanel = new function() {
 var DetailPanel = new function() {
     var elements = {}
 
-    var addClass = function(element, clsName) {
-        if (!element.className.includes(clsName)) {
-            element.className += ' ' + clsName
-        }
-    }
-
-    var removeClass = function(element, clsName) {
-        elements.panel.className = elements.panel.className.replace(new RegExp("(\\s|^)" + clsName + "(\\s|$)"), ' ').trim()
-    }
-
     this.init = function(domains) {
         elements.panel = document.getElementById('detail-panel')
         elements.domainSelect = document.getElementById('detail-domain-select')
@@ -102,16 +92,11 @@ var DetailPanel = new function() {
     }
 
     this.show = function(uttr) {
-        removeClass(elements.panel, 'gone')
         elements.domainSelect.value = uttr.getDomain()
         elements.idInfo.innerText = uttr.getId()
         elements.sourceInput.value = uttr.getSource()
         elements.utteranceInfo.innerText = uttr.getUtterance()
         elements.iobInfo.innerText = uttr.getIob()
-    }
-
-    this.hide = function() {
-        addClass(elements.panel, 'gone')
     }
 
     this.getId = function() {
@@ -177,7 +162,6 @@ var AnnotationTool = new function() {
     this.clear = function() {
         _utterances = []
         ListPanel.updateAll()
-        DetailPanel.hide()
     }
 
     var findUtterance = function(utterances, id) {

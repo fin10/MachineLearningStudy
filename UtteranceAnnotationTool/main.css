@@ -1,0 +1,50 @@
+body {
+    margin: 0;
+}
+
+.uppercase {
+    text-transform: uppercase;
+}
+
+.gone {
+    display: none;
+}
+
+header {
+    padding: 10px;
+    background-color: #FA6900;
+}
+
+header h2 {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.9);
+    letter-spacing: 2px;
+}
+
+#detail-panel {
+    padding: 10px;
+    background-color: #E0E4CC;
+    height: 300px;
+}
+
+input {
+    padding: 5px;
+    width: 60%;
+}
+
+#list-panel {
+    height: 240px;
+    background-color: #F38630;
+}
+
+#list-panel ul {
+    list-style-type: none;
+    margin: 0px;
+    padding: 10px;
+}
+
+#list-panel li {
+    background-color: white;
+    padding: 10px;
+    border-bottom: 1px solid #9E9E9E;
+}

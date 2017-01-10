@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CY Utterance Annotation Tool</title>
+    <link rel="stylesheet" href="main.css"/>
+    <script src="main.js"></script>
+</head>
+<body onload="onBodyLoaded()" onunload="onBodyUnloaded()">
+<header>
+    <h2 class="uppercase">CY Utterance Annotation Tool</h2>
+</header>
+
+<div id="enroll-panel">
+    <select id="enroll-domain-select"></select>
+    <input id="enroll-source-input" type="text">
+    <button id="enroll-enroll-button" onclick="EnrollPanel.onClick()">Enroll</button>
+</div>
+
+<div id="detail-panel">
+    <select id="detail-domain-select"></select>
+    <div id="detail-id-info"></div>
+    <div>
+        <p>Source</p>
+        <input id="detail-source-input" type="text">
+        <button id="detail-update-button" onclick="DetailPanel.onClick()">Update</button>
+    </div>
+    <div>
+        <p>Utterance</p>
+        <div id="detail-utterance-info"></div>
+    </div>
+    <div>
+        <p>IOB</p>
+        <div id="detail-iob-info"></div>
+    </div>
+</div>
+
+<div id="list-panel">
+    <button id="list-clear-button" onclick="ListPanel.onClick(this)">Clear</button>
+    <ul id="list-ul" onclick="ListPanel.onClick(this, event)"></ul>
+</div>
+</body>
+</html>

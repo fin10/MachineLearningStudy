@@ -2,12 +2,17 @@ function DomainModel(domain) {
     var _name = domain['domain']
     var _slots = domain['slots']
 
+    var slots = {}
+    for (i in _slots) {
+        slots[_slots[i]] = { name: _slots[i] }
+    }
+
     return {
         getName : function() {
             return _name
         },
         getSlots : function() {
-            return _slots
+            return slots
         },
         createOption : function() {
             var option = document.createElement('option')

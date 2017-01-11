@@ -4,9 +4,12 @@
     <meta charset="UTF-8">
     <title>CY Annotation Tool</title>
     <link rel="stylesheet" href="main.css"/>
+    <link rel="stylesheet" href="https://swisnl.github.io/jQuery-contextMenu/dist/jquery.contextMenu.css"/>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://swisnl.github.io/jQuery-contextMenu/dist/jquery.contextMenu.js"></script>
     <script src="main.js"></script>
-
 </head>
+
 <body onload="onBodyLoaded()" onunload="onBodyUnloaded()">
 <header>
     <h2 class="uppercase">CY Annotation Tool</h2>
@@ -24,9 +27,9 @@
     <div class="title uppercase">IOB</div>
     <div id="detail-iob-info" class="info">none</div>
     <select id="detail-domain-select"></select>
-    <input id="detail-source-input" type="text" class="round">
+    <input id="detail-source-input" type="text" class="context-menu-one round">
         <button id="detail-update-button" onclick="DetailPanel.onClick()">Update</button>
-    </div>
+</div>
 
 <div id="list-panel">
     <div id="list-controls">

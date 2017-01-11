@@ -130,6 +130,37 @@ var EnrollPanel = new function() {
 var DetailPanel = new function() {
     var elements = {}
     var id = -1
+    var slots = {}
+
+    var getSelectionStart = function(input) {
+        var index = input.selectionStart
+    	if (input.createTextRange) {
+    		var r = document.selection.createRange().duplicate()
+    		r.moveEnd('character', input.value.length)
+    		index = (r.text == '') ? input.value.length : input.value.lastIndexOf(r.text)
+    	}
+
+        while(input.value[index] == ' ') {
+            index += 1
+        }
+
+    	return index
+    }
+
+    var getSelectionEnd = function(input) {
+        var index = input.selectionEnd
+    	if (input.createTextRange) {
+    		var r = document.selection.createRange().duplicate()
+    		r.moveStart('character', -input.value.length)
+    		index = r.text.length
+    	}
+
+        while(input.value[index - 1] == ' ') {
+            index -= 1
+        }
+
+    	return index
+    }
 
     this.init = function(domains) {
         elements.panel = document.getElementById('detail-panel')
@@ -140,14 +171,34 @@ var DetailPanel = new function() {
 
         for (i in domains) {
             elements.domainSelect.appendChild(domains[i].createOption())
+            slots[domains[i].getName()] = domains[i].getSlots()
         }
+
+        $.contextMenu({
+            selector: '.context-menu-one',
+            callback: function(key, options) {
+    			var input = options.$trigger[0];
+    			var startIdx = getSelectionStart(input)
+    			var endIdx = getSelectionEnd(input)
+                var head = input.value.substring(0, startIdx)
+                var tail = input.value.substring(endIdx)
+                input.value = head + '(' + input.value.substring(startIdx, endIdx) + ')[' + key + ']' + tail
+            },
+            build: function() {
+                return {
+                    'items': slots[elements.domainSelect.value]
+                }
+            }
+        })
     }
 
     this.onClick = function() {
-        var id = this.getId()
-        var domain = this.getDomain()
-        var source = this.getSource()
-        AnnotationTool.updateUtterance(id, domain, source)
+        if (id != -1) {
+            var domain = this.getDomain()
+            var source = this.getSource()
+            var updated = AnnotationTool.updateUtterance(id, domain, source)
+            this.show(updated)
+        }
     }
 
     this.show = function(uttr) {
@@ -211,13 +262,15 @@ var AnnotationTool = new function() {
             uttr.setDomain(domain)
             uttr.setSource(source)
             ListPanel.update(uttr)
-            this.select(id)
         }
+
+        return uttr
     }
 
     this.select = function(id) {
         var uttr = find(id)
         if (uttr != null) {
+            DetailPanel.onClick()
             DetailPanel.show(uttr)
             ListPanel.focus(id)
         }

@@ -31,11 +31,18 @@ if __name__ == '__main__':
             print('epoch #%d Training...' % i)
             start_time = time.time()
             cost, model_path = model.train(train_dataset, model=model_path)
-            accuracy = model.test(valid_dataset, model=model_path)
+            accuracy, _ = model.test(valid_dataset, model=model_path)
             print('accuracy: %s, cost: %s, duration: %s' % (accuracy, cost, round(time.time() - start_time, 2)))
     except KeyboardInterrupt:
         print('\ninterrupt occurs')
 
     print('Testing...')
-    accuracy = model.test(test_dataset, model=model_path, result_report='slot_tagger_result.output')
+    accuracy, predict = model.test(test_dataset, model=model_path)
     print('final accuracy: %s, duration: %s' % (accuracy, round(time.time() - total_time, 2)))
+
+    with open('slot_tagger.output', 'w') as output:
+        output.write('score     : %s\n' % accuracy)
+        for i in range(test_dataset.length()):
+            output.write('utterance : %s\n' % ' '.join(test_dataset.get_tokens(i)))
+            output.write('expected  : %s\n' % ' '.join(test_dataset.get_iob(i)))
+            output.write('actual    : %s\n' % ' '.join(predict[i]))

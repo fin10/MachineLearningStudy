@@ -15,8 +15,9 @@ def write_output(name: str, extension: str, subset):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('output_filename')
+    parser.add_argument('output')
     parser.add_argument('input')
+    parser.add_argument('count', nargs='?', default=-1, type=int)
     args = parser.parse_args()
 
     items = []
@@ -29,6 +30,8 @@ if __name__ == '__main__':
     random.shuffle(items)
     print('%d exists.' % len(items))
 
+    items = items[:int(args.count)]
+
     TRAIN_RATIO = 0.7
     VALID_RATIO = 0.2
     TEST_RATIO = 0.1
@@ -37,6 +40,6 @@ if __name__ == '__main__':
     valid_index = int(len(items) * VALID_RATIO) + train_index
     test_index = int(len(items) * TEST_RATIO) + valid_index
 
-    write_output(args.output_filename, 'train', items[:train_index])
-    write_output(args.output_filename, 'valid', items[train_index:valid_index])
-    write_output(args.output_filename, 'test', items[valid_index:test_index])
+    write_output(args.output, 'train', items[:train_index])
+    write_output(args.output, 'valid', items[train_index:valid_index])
+    write_output(args.output, 'test', items[valid_index:test_index])

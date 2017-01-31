@@ -68,11 +68,11 @@ class SlotTaggerModel:
 
             word_vectors = []
             for tokens in dataset.get_tokens():
-                word_vectors.append(self.embed_word_vector(tokens))
+                word_vectors.append(self.encode_word_vector(tokens))
 
             slot_vectors = []
             for iob in dataset.get_iob():
-                slot_vectors.append(self.embed_slot_vector(iob))
+                slot_vectors.append(self.encode_slot_vector(iob))
 
             cost_output = float('inf')
             for _ in range(50):
@@ -87,36 +87,32 @@ class SlotTaggerModel:
 
             return cost_output, saver.save(sess, './slot_tagger_model.ckpt')
 
-    def test(self, dataset: Dataset, model: str, result_report=None):
+    def test(self, dataset: Dataset, model: str):
         saver = tf.train.Saver()
         with tf.Session() as sess:
             saver.restore(sess, model)
 
             word_vectors = []
             for tokens in dataset.get_tokens():
-                word_vectors.append(self.embed_word_vector(tokens))
+                word_vectors.append(self.encode_word_vector(tokens))
 
             slot_vectors = []
             for iob in dataset.get_iob():
-                slot_vectors.append(self.embed_slot_vector(iob))
+                slot_vectors.append(self.encode_slot_vector(iob))
 
-            prediction_output, target_output, score_output, length_output = sess.run(
-                [self.__prediction, self.__target, self.__score, self.__length],
+            prediction_output, score_output, length_output = sess.run(
+                [self.__prediction, self.__score, self.__length],
                 feed_dict={self.__x: word_vectors,
                            self.__y: slot_vectors,
                            self.__dropout: 1.0})
 
-            if result_report is not None:
-                with open(result_report, 'w') as f:
-                    f.write('score: %s\n' % score_output)
-                    for i in range(dataset.length()):
-                        f.write('%s\n' % ' '.join(dataset.get_tokens(i)))
-                        f.write('%s\n' % ' '.join(dataset.get_iob(i)))
-                        f.write('%s\n' % target_output[i][:length_output[i]])
-                        f.write('%s\n' % prediction_output[i][:length_output[i]])
-            return score_output
+            predict = []
+            for i in range(dataset.length()):
+                predict.append(self.decode_slot_vector(prediction_output[i][:length_output[i]]))
 
-    def embed_word_vector(self, tokens: list):
+            return score_output, predict
+
+    def encode_word_vector(self, tokens: list):
         result = []
         for token in tokens:
             result.append(self.__vocab.get(token))
@@ -129,7 +125,7 @@ class SlotTaggerModel:
 
         return result
 
-    def embed_slot_vector(self, iobs: list):
+    def encode_slot_vector(self, iobs: list):
         result = []
         for iob in iobs:
             result.append(self.__slots.index(iob))
@@ -146,3 +142,10 @@ class SlotTaggerModel:
                 vectors[i][result[i]] = 1
 
         return vectors
+
+    def decode_slot_vector(self, vector: list):
+        result = []
+        for v in vector:
+            result.append(self.__slots[v])
+
+        return result

@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import tensorflow as tf
 
@@ -84,8 +86,10 @@ class SlotTaggerModel:
                                           feed_dict={self.__x: x,
                                                      self.__y: y,
                                                      self.__dropout: 0.5})
+            if not os.path.exists('./model'):
+                os.mkdir('./model')
 
-            return cost_output, saver.save(sess, './slot_tagger_model.ckpt')
+            return cost_output, saver.save(sess, os.path.join('./model', 'slot_tagger_model.ckpt'))
 
     def test(self, dataset: Dataset, model: str):
         saver = tf.train.Saver()

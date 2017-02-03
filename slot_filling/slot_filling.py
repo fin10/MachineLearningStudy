@@ -37,12 +37,14 @@ if __name__ == '__main__':
         print('\ninterrupt occurs')
 
     print('Testing...')
-    accuracy, predict = model.test(test_dataset, model=model_path)
-    print('final accuracy: %s, duration: %s' % (accuracy, round(time.time() - total_time, 2)))
+    for domain in Dataset.get_domains():
+        dataset = test_dataset.get_dataset(domain)
+        accuracy, predict = model.test(dataset, model=model_path)
+        print('[%s] final accuracy: %s' % (domain, accuracy))
 
-    with open('slot_tagger.output', 'w') as output:
-        output.write('score     : %s\n' % accuracy)
-        for i in range(test_dataset.length()):
-            output.write('utterance : %s\n' % ' '.join(test_dataset.get_tokens(i)))
-            output.write('expected  : %s\n' % ' '.join(test_dataset.get_iob(i)))
-            output.write('actual    : %s\n' % ' '.join(predict[i]))
+        with open('slot_tagger_' + domain + '.output', 'w') as output:
+            output.write('score : %s\n' % accuracy)
+            for i in range(dataset.length()):
+                output.write('utterance : %s\n' % ' '.join(dataset.get_tokens(i)))
+                output.write('expected  : %s\n' % ' '.join(dataset.get_iob(i)))
+                output.write('actual    : %s\n' % ' '.join(predict[i]))

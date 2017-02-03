@@ -3,6 +3,7 @@ import re
 
 class Dataset:
     __iob_regex = re.compile('\(([^)]+)\)\[([\w]+)\]')
+    __domains = []
     __slots = []
 
     def __init__(self):
@@ -13,6 +14,9 @@ class Dataset:
 
     def append(self, domain: str, raw: str):
         if len(raw) is not 0:
+            if domain not in Dataset.__domains:
+                Dataset.__domains.append(domain)
+
             self.__domain.append(domain)
             self.__raw.append(raw)
 
@@ -32,6 +36,22 @@ class Dataset:
     def get_tokens(self, index: int = None):
         return index is None and self.__tokens or self.__tokens[index]
 
+    def get_dataset(self, domain: str):
+        dataset = Dataset()
+        indexes = [index for index in range(len(self.__domain)) if self.__domain[index] == domain]
+        dataset.__raw = [self.__raw[index] for index in indexes]
+        dataset.__iob = [self.__iob[index] for index in indexes]
+        dataset.__tokens = [self.__tokens[index] for index in indexes]
+
+        return dataset
+
+    def length(self):
+        return len(self.__raw)
+
+    @classmethod
+    def get_domains(cls):
+        return cls.__domains
+
     @classmethod
     def get_slots(cls):
         return cls.__slots
@@ -43,6 +63,9 @@ class Dataset:
         test = Dataset()
 
         for item in items:
+            if 'state' in item and item['state'] == 'disabled':
+                continue
+
             domain = item['domain']
             with open(item['train'], 'r', encoding='utf-8') as file:
                 for line in file:
@@ -82,6 +105,3 @@ class Dataset:
                 Dataset.__slots.append(slot)
 
         return iob, tokens
-
-    def length(self):
-        return len(self.__raw)

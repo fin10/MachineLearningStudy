@@ -1,4 +1,5 @@
 import os
+import sys
 
 import numpy as np
 import tensorflow as tf
@@ -10,9 +11,12 @@ from vocabulary import Vocabulary
 class SlotTaggerModel:
     MAX_LENGTH = 100
 
-    def __init__(self, vocab: Vocabulary, slots: list):
+    def __init__(self, session, vocab: Vocabulary, slots: list):
+        self.__step = 0
         self.__num_neurons = 300
         self.__num_layers = 1
+        self.__batch_size = 64
+        self.__step_per_checkpoints = 100
         self.__vocab = vocab
         self.__slots = slots
         num_slots = len(self.__slots)
@@ -52,6 +56,7 @@ class SlotTaggerModel:
         correct = tf.cast(tf.equal(self.__prediction, self.__target), tf.float32) * mask
         correct = tf.reduce_sum(correct, reduction_indices=1) / tf.cast(self.__length, tf.float32)
         self.__score = tf.reduce_mean(correct)
+        self.__saver = tf.train.Saver(tf.global_variables())
 
         print('[SlotTaggerModel]')
         print('Neurons: %d' % self.__num_neurons)
@@ -60,61 +65,67 @@ class SlotTaggerModel:
         print('Slots: %d' % num_slots)
         print('Learning rate: %f' % learning_rate)
 
-    def train(self, dataset: Dataset, model=None):
-        saver = tf.train.Saver()
-        with tf.Session() as sess:
-            if model is None:
-                sess.run(tf.global_variables_initializer())
-            else:
-                saver.restore(sess, model)
+        if not os.path.exists('./model'):
+            os.mkdir('./model')
 
-            word_vectors = []
-            for tokens in dataset.get_tokens():
-                word_vectors.append(self.encode_word_vector(tokens))
+        ckpt = tf.train.get_checkpoint_state('./model')
+        if ckpt and tf.train.checkpoint_exists(ckpt.model_checkpoint_path):
+            print("Reading model parameters from %s" % ckpt.model_checkpoint_path)
+            self.__saver.restore(session, ckpt.model_checkpoint_path)
 
-            slot_vectors = []
-            for iob in dataset.get_iob():
-                slot_vectors.append(self.encode_slot_vector(iob))
+        else:
+            print("Created model with fresh parameters.")
+            session.run(tf.global_variables_initializer())
 
-            cost_output = float('inf')
-            for _ in range(50):
-                indexes = np.random.choice(len(word_vectors), 50, replace=False)
-                x = [word_vectors[index] for index in indexes]
-                y = [slot_vectors[index] for index in indexes]
+        print()
+        sys.stdout.flush()
 
-                _, cost_output = sess.run([self.__optimizer, self.__cost],
-                                          feed_dict={self.__x: x,
-                                                     self.__y: y,
-                                                     self.__dropout: 0.5})
-            if not os.path.exists('./model'):
-                os.mkdir('./model')
+    def train(self, session, dataset: Dataset):
+        word_vectors = []
+        for tokens in dataset.get_tokens():
+            word_vectors.append(self.encode_word_vector(tokens))
 
-            return cost_output, saver.save(sess, os.path.join('./model', 'slot_tagger_model.ckpt'))
+        slot_vectors = []
+        for iob in dataset.get_iob():
+            slot_vectors.append(self.encode_slot_vector(iob))
 
-    def test(self, dataset: Dataset, model: str):
-        saver = tf.train.Saver()
-        with tf.Session() as sess:
-            saver.restore(sess, model)
+        cost_output = float('inf')
+        for _ in range(self.__step_per_checkpoints):
+            indexes = np.random.choice(len(word_vectors), self.__batch_size, replace=False)
+            x = [word_vectors[index] for index in indexes]
+            y = [slot_vectors[index] for index in indexes]
 
-            word_vectors = []
-            for tokens in dataset.get_tokens():
-                word_vectors.append(self.encode_word_vector(tokens))
+            self.__step += 1
+            _, cost_output = session.run([self.__optimizer, self.__cost],
+                                         feed_dict={self.__x: x,
+                                                    self.__y: y,
+                                                    self.__dropout: 0.5})
 
-            slot_vectors = []
-            for iob in dataset.get_iob():
-                slot_vectors.append(self.encode_slot_vector(iob))
+        checkpoint_path = os.path.join('./model', "slot_filling_model.ckpt")
+        self.__saver.save(session, checkpoint_path, global_step=self.__step)
 
-            prediction_output, score_output, length_output = sess.run(
-                [self.__prediction, self.__score, self.__length],
-                feed_dict={self.__x: word_vectors,
-                           self.__y: slot_vectors,
-                           self.__dropout: 1.0})
+        return cost_output
 
-            predict = []
-            for i in range(dataset.length()):
-                predict.append(self.decode_slot_vector(prediction_output[i][:length_output[i]]))
+    def test(self, session, dataset: Dataset):
+        word_vectors = []
+        for tokens in dataset.get_tokens():
+            word_vectors.append(self.encode_word_vector(tokens))
 
-            return score_output, predict
+        slot_vectors = []
+        for iob in dataset.get_iob():
+            slot_vectors.append(self.encode_slot_vector(iob))
+
+        prediction_output, score_output, length_output = session.run(
+            [self.__prediction, self.__score, self.__length],
+            feed_dict={self.__x: word_vectors,
+                       self.__y: slot_vectors,
+                       self.__dropout: 1.0})
+
+        predict = []
+        for i in range(dataset.length()):
+            predict.append(self.decode_slot_vector(prediction_output[i][:length_output[i]]))
+
+        return score_output, predict
 
     def encode_word_vector(self, tokens: list):
         result = []
@@ -153,3 +164,6 @@ class SlotTaggerModel:
             result.append(self.__slots[v])
 
         return result
+
+    def get_global_step(self):
+        return self.__step

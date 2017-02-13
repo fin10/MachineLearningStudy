@@ -1,15 +1,15 @@
 import unittest
 
-from tools.grammar_model import GrammarModel
+from tools.grammar_generator import GrammarGenerator
 
 
-class GrammarModelTest(unittest.TestCase):
+class GrammarGeneratorTest(unittest.TestCase):
     def test_alternate(self):
         test = ['good {morning|afternoon|evening}']
         expected = ['good morning',
                     'good afternoon',
                     'good evening']
-        actual = GrammarModel.alternate(test)
+        actual = GrammarGenerator.alternate(test)
         self.assertListEqual(expected, actual)
 
     def test_replace(self):
@@ -20,5 +20,5 @@ class GrammarModelTest(unittest.TestCase):
             'test_type': {'korean', 'chinese'}
         }
 
-        actual = GrammarModel.replace(test, slots)
+        actual = GrammarGenerator.replace(test, slots)
         self.assertListEqual(expected, actual)

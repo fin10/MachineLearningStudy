@@ -6,6 +6,12 @@ class Dataset:
     __domains = []
     __slots = []
 
+    @classmethod
+    def init_slot(cls, slots: set):
+        cls.__slots = list(slots)
+        cls.__slots.sort()
+        pass
+
     def __init__(self):
         self.__domain = []
         self.__raw = []
@@ -24,8 +30,8 @@ class Dataset:
             self.__iob.append(iob)
             self.__tokens.append(tokens)
 
-    def get_domain(self, index: int):
-        return self.__domain[index]
+    def get_domain(self, index: int = None):
+        return index is None and self.__domain or self.__domain[index]
 
     def get_raw(self, index: int):
         return self.__raw[index]
@@ -57,27 +63,15 @@ class Dataset:
         return cls.__slots
 
     @staticmethod
-    def create_dataset(items: list):
-        train = Dataset()
-        valid = Dataset()
-        test = Dataset()
+    def create_dataset(lines: list):
+        data_set = Dataset()
 
-        for item in items:
-            if 'state' in item and item['state'] == 'disabled':
-                continue
+        regex = re.compile('\[([^\]]+)\] (.+)')
+        for line in lines:
+            match = regex.findall(line)[0]
+            data_set.append(match[0].strip(), match[1].strip())
 
-            domain = item['domain']
-            with open(item['train'], 'r', encoding='utf-8') as file:
-                for line in file:
-                    train.append(domain, line.strip())
-            with open(item['valid'], 'r', encoding='utf-8') as file:
-                for line in file:
-                    valid.append(domain, line.strip())
-            with open(item['test'], 'r', encoding='utf-8') as file:
-                for line in file:
-                    test.append(domain, line.strip())
-
-        return train, valid, test
+        return data_set
 
     @staticmethod
     def parse_iob(domain: str, raw: str):
@@ -102,6 +96,6 @@ class Dataset:
 
         for slot in iob:
             if slot not in Dataset.__slots:
-                Dataset.__slots.append(slot)
+                raise ValueError('{} is not invalid from \'{}\'.'.format(slot, raw))
 
         return iob, tokens

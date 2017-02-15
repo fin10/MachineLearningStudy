@@ -1,0 +1,20 @@
+{could you|would you|} recommend (<book_subject>)[category] books published on ({last|this|} {<month>|<day_of_week>|year})[published_date] {for me|}
+{could you|would you|} {find|show me|show me that} {a list of|} books related (<keyword>)[keyword]
+{could you|would you|} {find|show me|show me that} new books in (<library>)[library]
+I want to know new books in (<library>)[library]
+{could you|would you|} {find|show me|show me that} {a list of|} the (<sorting>)[sorting_option] books on ({last|this} {<month>|<day_of_week>|year})[published_date]
+{could you|would you|} {find|show me} books that have to be returned until (this {<month>|<day_of_week>})[expired_date]
+{could you|would you|} {find|show me} books that received good reviews in ({last|this} {<month>|<day_of_week>|year})[published_date]
+{could you|would you|} {find|show me} books that was published on (last {<month>|<day_of_week>|year})[published_date]
+{could you|would you|} {find|show me|show me that} books written by (<author>)[author]
+{could you|would you|} {find|show me|show me that} books written by (<author>)[author] on (last {<month>|<day_of_week>|year})[published_date]
+I want to know books written by (<author>)[author] in ({<month>|<day_of_week>})[published_date]
+{find|show me} a library that has (<book_title>)[title] {in (<the_location>)[location]|}
+have I any books has to be returned until (this {<month>|<day_of_week>})[expired_date]
+I want (<book_subject>)[category] books {that were|} published on ({last|this} {<month>|<day_of_week>|year})[published_date]
+I'm looking for a library in (<the_location>)[location]
+is there (<book_title>)[title] in (<library>)[library] {now|}
+what are books received the (<sorting>)[sorting_option] on ({last|this} {<month>|<day_of_week>|year})[published_date]
+what are the (<sorting>)[sorting_option] books on ({last|this} {<month>|<day_of_week>|year})[published_date]
+where can I find a library has (<book_title>)[title]
+where is a library in (<the_location>)[location]

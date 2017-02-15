@@ -1,0 +1,17 @@
+{please|} bring me to {(<poi>)[destination]|(<the_poi>)[destination]} {in (<the_location>)[region]|}
+{show me|where is} the nearest {(<poi>)[destination]|(<the_poi>)[destination]}
+are there any (<poi>)[destination] in (<the_location>)[region]
+can i pay in (<currency>)[currency] {with (<payment_method>)[payment_method]|}
+can i pay with (<payment_method>)[payment_method]
+could you {please |}show me around {(<poi>)[destination]|(<the_poi>)[destination]}
+could you tell me the way to {(<poi>)[destination]|(<the_poi>)[destination]}
+how {can i get to|do i get from} {(<poi>)[destination]|(<the_poi>)[destination]}
+how do i get around in (<the_location>)[region]
+i need to find a (<vehicle>)[transport] to {(<poi>)[destination]|(<the_poi>)[destination]} {in (<the_location>)[region]|}
+i need to get to (<poi>)[destination] {can you help me buy the ticket|}
+i'd like to {go|visit some} {(<poi>)[destination]|(<the_poi>)[destination]}
+is the {(<poi>)[destination]|(<the_poi>)[destination]} opened {on (<on_date>)[date]|at <time_hour>[data] o'clock}
+take the (<vehicle>)[transport] to {(<poi>)[destination]|(<the_poi>)[destination]}
+to {(<poi>)[destination]|(<the_poi>)[destination]} {in (<the_location>)[region]|}
+we are going to the {(<the_poi>)[destination]} {(<date>)[date]|on (<on_date>)[date]|at <time_hour>[data] o'clock}
+what is the weather in (<the_location>)[region] {(<date>)[date]|on (<on_date>)[date]|at <time_hour>[data] o'clock}

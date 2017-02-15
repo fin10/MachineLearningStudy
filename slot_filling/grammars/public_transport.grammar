@@ -1,0 +1,248 @@
+(<relative_time_minute>)[departure_time_rel] minutes
+({<the_location>|<the_poi>})[from_stop] {going |}to ({<the_location>|<the_poi>})[to_stop] {how long will it take|}
+({<the_location>|<the_poi>})[from_stop] to
+(<time_hour>)[departure_time] ({am|pm})[ampm] schedule {by (<vehicle>)[vehicle]|}
+(<time_hour>)[departure_time] o'clock {from|}
+(<time_hour>{ <relative_time_minute>|})[departure_time] ({am|pm})[ampm] take the (<vehicle>)[vehicle]
+(<time_hour>{ <relative_time_minute>|})[departure_time] take the (<vehicle>)[vehicle]
+(<vehicle>)[vehicle] {connection|line}
+(<vehicle>)[vehicle] connection from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+{and what is the|is there a|yes|} connection in (<relative_time_hour>)[departure_time_rel]
+{and what is the|is there a|yes|} connection in (<relative_time_minute>)[departure_time_rel] minutes
+{change|connection} to ({<the_location>|<the_poi>})[to_stop]
+{connection|} by (<vehicle>)[vehicle]
+{depart|} in (<relative_time_hour>)[departure_time_rel]
+{depart|} in (<relative_time_minute>)[departure_time_rel] minutes
+{do you have a|give me a|} connection from ({<the_location>|<the_poi>})[from_stop] to ({<the_location>|<the_poi>})[to_stop]
+{how do i get|} from ({<the_location>|<the_poi>})[from_stop] to ({<the_location>|<the_poi>})[to_stop]
+{no|} from ({<the_location>|<the_poi>})[from_stop]
+{no|yeah|yes|} i {do |}want to depart from (<the_location>)[from_stop] {yes|to (<the_location>)[to_stop]|}
+{ok and|} i need {a|to find out the} connection in (<relative_time_hour>)[departure_time_rel]
+{ok and|} i need {a|to find out the} connection in (<relative_time_minute>)[departure_time_rel] minutes
+{ok|} what if i leave at{ around|} (<time_hour>{ <relative_time_minute>|})[departure_time] ({am|pm})[ampm]
+a way to go not by (<vehicle>)[vehicle]
+alright if i go by (<vehicle>)[vehicle]
+alright then go to (<the_location>)[to_stop]
+alternative at (<time_hour>{ <relative_time_minute>|})[departure_time] ({am|pm})[ampm]
+an alternative at (<time_hour>{ <relative_time_minute>|})[departure_time] ({am|pm})[ampm] by (<vehicle>)[vehicle]
+and {i want to go to|i'm going to} ({<the_location>|<the_poi>})[to_stop]
+and i would like to know the duration of the trip and find out the connections at (<time_hour>{ <relative_time_minute>|})[departure_time] ({am|pm})[ampm]
+at (<time_hour>{ <relative_time_minute>|})[departure_time]
+at (<time_hour>{ <relative_time_minute>|})[departure_time] ({am|pm})[ampm]
+best connection at (<time_hour>)[departure_time] ({am|pm})[ampm]
+but i {wanna go by|want to go by|want to go to by by} (<vehicle>)[vehicle]
+can i {get a|go by} (<vehicle>)[vehicle]
+can i change the destination to (<the_location>)[to_stop]
+can i get a ride at (<time_hour>)[departure_time] in the ({morning|afternoon|evening})[ampm] and i want to go by (<vehicle>)[vehicle]
+can i get a schedule at (<time_hour>)[departure_time] ({am|pm})[ampm]
+can i get an alternative at (<time_hour>{ <relative_time_minute>|})[departure_time] in the ({morning|afternoon|evening})[ampm]
+can i get information about a connection at (<time_hour>)[departure_time] ({am|pm})[ampm]
+can i go from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+can i go to (<the_location>)[to_stop]
+can i how about if i leave at (<time_hour>{ <relative_time_minute>|})[departure_time] ({am|pm})[ampm]
+change {my |the |}destination to (<the_location>)[to_stop]
+could i get a (<vehicle>)[vehicle] route at (<time_hour>{ <relative_time_minute>|})[departure_time] in the ({morning|afternoon|evening})[ampm]
+destination is (<the_location>)[to_stop]
+find (<vehicle>)[vehicle] connection from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+for (<time_hour>{ <relative_time_minute>|})[departure_time] ({am|pm})[ampm]
+from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+going to (<the_location>)[to_stop]
+hey what if i am going to (<the_location>)[to_stop]
+how do i go from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+how long will it take to get there on the (<vehicle>)[vehicle]
+how long will it take to get to (<the_location>)[to_stop] {to|}
+how long will it take to get to (<the_location>)[to_stop] from (<the_location>)[from_stop]
+how long will it take to go from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+how long will it take to go from (<the_location>)[from_stop] to (<the_location>)[to_stop] by (<vehicle>)[vehicle]
+how to travel from (<the_location>)[from_stop]
+how to travel to (<the_location>)[to_stop]
+i am {going|traveling} to (<the_location>)[to_stop]
+i am departing from (<the_location>)[from_stop] and want to get to (<the_location>)[to_stop]
+i am headed from (<the_location>)[from_stop] to (<the_location>)[to_stop] and i was wondering how long the ride would be
+i am looking for a transit schedule from (<the_location>)[from_stop] headed to (<the_location>)[to_stop]
+i am traveling from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+i am travelling from (<the_location>)[from_stop] and
+i am travelling from (<the_location>)[from_stop] and {i want to get to|my destination is} (<the_location>)[to_stop]
+i need {to go|to get|a ride|a trip going} from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+i need a (<vehicle>)[vehicle] connection
+i need a (<vehicle>)[vehicle] connection from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+i need a connection at (<time_hour>)[departure_time] ({am|pm})[ampm]
+i need a connection by (<vehicle>)[vehicle]
+i need a public transit route from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+i need a public transit route from departing from (<the_location>)[from_stop]
+i need a ride at (<time_hour>{ <relative_time_minute>|})[departure_time] ({am|pm})[ampm]
+i need information about a (<time_hour>)[departure_time] o'clock ride but
+i need to {go|find a connection} from (<the_location>)[from_stop] {queen|man|to|}
+i need to find a (<vehicle>)[vehicle] connection
+i need to find out about a (<vehicle>)[vehicle] connection
+i need to find the (<vehicle>)[vehicle] connection from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+i need to go from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+i need to go to (<the_location>)[to_stop]
+i need to know about trips starting from (<the_location>)[from_stop] and going to (<the_location>)[to_stop]
+i need to know how to start from (<the_location>)[from_stop] and get to (<the_location>)[to_stop]
+i need to know the duration of the trip and find out connection at (<time_hour>)[departure_time] ({am|pm})[ampm]
+i need to leave at (<time_hour>{ <relative_time_minute>|})[departure_time] in the ({morning|afternoon|evening})[ampm]
+i prefer to take the (<vehicle>)[vehicle]
+i rather take the (<vehicle>)[vehicle]
+i wanna find a (<vehicle>)[vehicle] connection from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+i wanna go to (<the_location>)[to_stop]
+i wanna leave at (<time_hour>{ <relative_time_minute>|})[departure_time] ({am|pm})[ampm] by (<vehicle>)[vehicle]
+i want a (<vehicle>)[vehicle] connection from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+i want to arrive at (<the_location>)[to_stop] {how long will it take|}
+i want to change my destination to (<the_location>)[to_stop]
+i want to change my mind and go to (<the_location>)[to_stop] at (<time_hour>)[departure_time] o'clock
+i want to find a (<vehicle>)[vehicle] connection from (<the_location>)[from_stop] from
+i want to find a (<vehicle>)[vehicle] connection from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+i want to find a connection from (<the_location>)[from_stop] queen to (<the_location>)[to_stop]
+i want to get to (<the_location>)[to_stop]
+i want to go at (<time_hour>{ <relative_time_minute>|})[departure_time] ({am|pm})[ampm] by (<vehicle>)[vehicle]
+i want to go by (<vehicle>)[vehicle]
+i want to go from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+i want to go i want to go from (<the_location>)[from_stop]
+i want to go to (<the_location>)[to_stop] {by|hello|instead|}
+i want to go to (<the_location>)[to_stop] from (<the_location>)[from_stop]
+i want to know about a trip going from (<the_location>)[from_stop]
+i want to know how long it takes to get from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+i want to know how to get from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+i want to know how to travel from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+i want to leave at (<time_hour>)[departure_time] ({am|pm})[ampm] {by (<vehicle>)[vehicle]|}
+i want to leave from (<the_location>)[from_stop] and get to (<the_location>)[to_stop]
+i want to leave from (<the_location>)[from_stop] and go to (<the_location>)[to_stop]
+i want to take {a|the} (<vehicle>)[vehicle]
+i want to travel from (<the_location>)[from_stop]
+i want to travel from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+i want to travel to (<the_location>)[to_stop]
+i would like (<time_hour>)[departure_time] o'clock (<vehicle>)[vehicle] to (<the_location>)[to_stop]
+i would like {a|to leave or depart at} (<time_hour>{ <relative_time_minute>|})[departure_time] ({am|pm})[ampm]
+i would like a ride at (<time_hour>{ <relative_time_minute>|})[departure_time] and would like to take the (<vehicle>)[vehicle]
+i would like my departure time at (<time_hour>{ <relative_time_minute>|})[departure_time] ({am|pm})[ampm]
+i would like the (<vehicle>)[vehicle] connection from (<the_location>)[from_stop]
+i would like to depart from (<the_location>)[from_stop] {and go to (<the_location>)[to_stop]|}
+i would like to find a (<vehicle>)[vehicle]
+i would like to find a (<vehicle>)[vehicle] connection from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+i would like to go {to |}from (<the_location>)[from_stop] to (<the_location>)[to_stop] {man|}
+i would like to go from (<the_location>)[from_stop] {to|}
+i would like to go from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+i would like to go to (<the_location>)[to_stop]
+i would like to search for a route leaving from (<the_location>)[from_stop] to
+i would like to start from (<the_location>)[from_stop] and go to (<the_location>)[to_stop]
+i would like to take the (<vehicle>)[vehicle]
+i would like to travel from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+i would prefer to go by (<vehicle>)[vehicle]
+i would rather go by (<vehicle>)[vehicle]
+i would rather take the (<vehicle>)[vehicle]
+i would rather use the (<vehicle>)[vehicle]
+i'd like it from (<the_location>)[from_stop] to the
+i'd like to depart from (<the_location>)[from_stop]
+id like to find a (<vehicle>)[vehicle] connection please
+i'd like to find out connection at (<time_hour>{ <relative_time_minute>|})[departure_time] ({am|pm})[ampm]
+i'd like to go for a trip from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+i'd like to leave at (<time_hour>{ <relative_time_minute>|})[departure_time] ({am|pm})[ampm]
+i'd rather use the (<vehicle>)[vehicle]
+i'm {going|headed} to (<the_location>)[to_stop]
+i'm asking for public transport and i want to go from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+i'm changing go to (<the_location>)[to_stop]
+i'm departing from (<the_location>)[from_stop]
+i'm going from (<the_location>)[from_stop] {and heading |}to (<the_location>)[to_stop] {thank you goodbye|}
+i'm looking for a (<time_hour>{ <relative_time_minute>|})[departure_time] ({am|pm})[ampm] connection
+i'm looking for a public transit route from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+i'm saying i want to go to (<the_location>)[to_stop] and i know i want to know how long it will take
+i'm traveling from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+i'm travelling from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+information to get from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+is there a (<vehicle>)[vehicle] {connection|option}
+is there a {connection|schedule} {at|for} (<time_hour>)[departure_time] {o'clock |}in the ({morning|afternoon|evening})[ampm]
+is there a connection by (<vehicle>)[vehicle]
+is there a different connection like a (<vehicle>)[vehicle]
+is there a time i can leave at (<time_hour>{ <relative_time_minute>|})[departure_time] ({am|pm})[ampm]
+is there an alternate route at (<time_hour>{ <relative_time_minute>|})[departure_time] ({am|pm})[ampm]
+is there an alternative {route |}at (<time_hour>{ <relative_time_minute>|})[departure_time] ({am|pm})[ampm]
+is there an alternative {route |}at (<time_hour>{ <relative_time_minute>|})[departure_time] in the ({morning|afternoon|evening})[ampm]
+is there an alternative to (<time_hour>{ <relative_time_minute>|})[departure_time] i would like to take the (<vehicle>)[vehicle]
+is there an alternative to take the (<vehicle>)[vehicle]
+is there an option at (<time_hour>)[departure_time] o'clock
+is there an option at (<time_hour>{ <relative_time_minute>|})[departure_time] ({am|pm})[ampm]
+is there an option for (<time_hour>)[departure_time] o'clock in the ({morning|afternoon|evening})[ampm]
+is there another alternative for (<time_hour>)[departure_time] o'clock in the ({morning|afternoon|evening})[ampm] by taking the (<vehicle>)[vehicle]
+is there any other connection from(<the_location>)[from_stop] to (<the_location>)[to_stop]
+looking for (<vehicle>)[vehicle] connection
+lost connection from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+my destination is (<the_location>)[to_stop]
+no i want a (<vehicle>)[vehicle] option
+no i want to {go to|arrive at} (<the_location>)[to_stop]
+no i want to go from (<the_location>)[from_stop] {to|}
+no i want to go from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+no i would like to go to (<the_location>)[to_stop]
+no i would like to travel to (<the_location>)[to_stop]
+no i'm departing from (<the_location>)[from_stop] and i'm going to (<the_location>)[to_stop]
+no port authority to (<the_location>)[to_stop]
+ok can i go to (<the_location>)[to_stop]
+ok i want to go to (<the_location>)[to_stop]
+ok i would like to go to (<the_location>)[to_stop]
+okay i'd like to take the (<vehicle>)[vehicle]
+okay what if i'd rather ride the (<vehicle>)[vehicle]
+port authority to (<the_location>)[to_stop]
+prefer to use the (<vehicle>)[vehicle]
+public transport from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+rather take the (<vehicle>)[vehicle]
+ride on the (<vehicle>)[vehicle] from delancey to (<the_location>)[to_stop]
+same destination in the ({morning|afternoon|evening})[ampm] at (<time_hour>)[departure_time]
+schedule at (<time_hour>)[departure_time] o'clock in the ({morning|afternoon|evening})[ampm]
+schedule at (<time_hour>{ <relative_time_minute>|})[departure_time] in the ({morning|afternoon|evening})[ampm]
+search for a route (<time_hour>{ <relative_time_minute>|})[departure_time] ({am|pm})[ampm] to (<the_location>)[to_stop]
+so i want to find a connection from (<the_location>)[from_stop]
+starting from (<the_location>)[from_stop]
+street at (<time_hour>)[departure_time] o'clock ({am|pm})[ampm]
+thank you i need to at (<time_hour>)[departure_time] oclock and on a (<vehicle>)[vehicle] to (<the_location>)[to_stop]
+then i would like to get a (<time_hour>)[arrival_time] o'clock travel to (<the_location>)[to_stop]
+there a (<time_hour>)[departure_time] o'clock schedule
+time requirement for a (<vehicle>)[vehicle] connection
+to (<the_location>)[to_stop] {and|}
+to (<the_location>)[to_stop] at (<time_hour>)[departure_time] o'clock
+transit itinerary from (<the_location>)[from_stop]
+transit itinerary from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+transit schedule from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+travel by (<vehicle>)[vehicle]
+travelling to (<the_location>)[to_stop]
+use (<vehicle>)[vehicle]
+want to find a (<vehicle>)[vehicle] connection
+want to go to (<the_location>)[to_stop]
+what about (<time_hour>{ <relative_time_minute>|})[departure_time] in the ({morning|afternoon|evening})[ampm]
+what about a connection at (<time_hour>{ <relative_time_minute>|})[departure_time] ({am|pm})[ampm]
+what about a connection by (<vehicle>)[vehicle]
+what about from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+what about the (<time_hour>{ <relative_time_minute>|})[departure_time] ({am|pm})[ampm] connection
+what about the connection at (<time_hour>)[departure_time] o'clock in the ({morning|afternoon|evening})[ampm] i prefer to take the (<vehicle>)[vehicle]
+what connection will i be in (<relative_time_hour>)[departure_time_rel]
+what connection will i be in (<relative_time_minute>)[departure_time_rel] minutes
+what if i want to go instead to (<the_location>)[to_stop]
+what is the connection in (<relative_time_hour>)[departure_time_rel]
+what is the connection in (<relative_time_minute>)[departure_time_rel] minutes
+what is the next connection from (<the_location>)[from_stop]
+what time will i get to (<the_location>)[to_stop]
+what's the connect connection in (<relative_time_hour>)[departure_time_rel]
+what's the connect connection in (<relative_time_minute>)[departure_time_rel] minutes
+what's the connection at (<time_hour>{ <relative_time_minute>|})[departure_time]
+when will the next (<vehicle>)[vehicle]
+yes be at the (<vehicle>)[vehicle]
+yes can i have a connection to from (<the_location>)[from_stop] to ro
+yes how {do i get|to start} from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+yes i am leaving from (<the_location>)[from_stop] and i would like to get to (<the_location>)[to_stop]
+yes i am still here can we take the (<vehicle>)[vehicle]
+yes i am travelling from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+yes i like to travel to (<the_location>)[to_stop]
+yes i need a connection a (<vehicle>)[vehicle] connection from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+yes i need a ride from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+yes i need directions to (<the_location>)[to_stop]
+yes i want to go from (<the_location>)[from_stop] to (<the_location>)[to_stop] on the (<vehicle>)[vehicle]
+yes i would like to go from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+yes i would like to know when i could catch the next transportation from (<the_location>)[from_stop]
+yes i would like to leave later at (<time_hour>{ <relative_time_minute>|})[departure_time] ({am|pm})[ampm]
+yes i would like to ride from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+yes i would like to take the (<vehicle>)[vehicle]
+yes i would like to travel from (<the_location>)[from_stop] {and go |}to (<the_location>)[to_stop]
+yes i'd like details on a trip from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+yes i'd like public transit from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+yes i'd like to {go|travel} from (<the_location>)[from_stop] to (<the_location>)[to_stop]
+yes i'm looking for transportation from (<the_location>)[from_stop] to
+yes transit itinerary from (<the_location>)[from_stop] to (<the_location>)[to_stop]

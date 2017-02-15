@@ -22,10 +22,10 @@ class GrammarGenerator:
         alters = GrammarGenerator.__alternate_pattern.findall(grammar)
         items = GrammarGenerator.__alternate(grammar, alters)
 
-        result = []
+        result = {}
         for item in items:
             entities = GrammarGenerator.__replace_pattern.findall(item)
-            result += GrammarGenerator.__replace(item, entities, self.__vocab)
+            result[item] = GrammarGenerator.__replace(item, entities, self.__vocab)
 
         return result
 
@@ -38,7 +38,7 @@ class GrammarGenerator:
             for w in ws:
                 result += GrammarGenerator.__alternate(text.replace(alter[0], w, 1), alters[:])
         else:
-            result.append(text)
+            result.append(text.strip().replace('  ', ' '))
 
         return result
 
@@ -51,7 +51,7 @@ class GrammarGenerator:
             for slot in slots:
                 result += GrammarGenerator.__replace(text.replace(entity[0], slot, 1), entities[:], vocab)
         else:
-            result.append(text)
+            result.append(text.strip().replace('  ', ' '))
 
         return result
 
@@ -68,31 +68,46 @@ if __name__ == '__main__':
     for root, sub, files in os.walk(args.input):
         for file in files:
             if file.endswith('.grammar'):
-                result = []
+                result = {}
                 domain = os.path.splitext(file)[0]
                 with open(os.path.join(root, file), 'r', encoding='utf-8') as lines:
                     for line in lines:
                         line = line.strip()
                         if len(line) > 0:
-                            result += generator.generate(line)
+                            result.update(generator.generate(line))
 
                 print('-- %s --' % domain)
-                print('%d are generated from %s.' % (len(result), file))
+                print('%d are generated from %s.' % (sum([len(value) for value in result.values()]), file))
 
-                random.shuffle(result)
-                result = result[:args.count]
+                data = []
+                loop = True
+                keys = result.keys()
+                while loop:
+                    for key in keys:
+                        if len(result[key]) > 0:
+                            data.append(result[key].pop())
+                        if len(data) == args.count:
+                            loop = False
+                            break
 
-                slots, train, dev, test = DataSplitter.split(domain, result)
+                if not os.path.exists('./out'):
+                    os.mkdir('./out')
+
+                with open('./out/{}.all'.format(domain), 'w', encoding='utf-8') as output:
+                    output.write('\n'.join(data))
+
+                random.shuffle(data)
+                slots, train, dev, test = DataSplitter.split(domain, data)
                 print('slot: %d' % len(slots))
                 print('train: %d' % len(train))
                 print('dev: %d' % len(dev))
-                print('test: %d\n' % len(test))
+                print('test: %d' % len(test))
 
-                with open('./output/{}.slot'.format(domain), 'w', encoding='utf-8') as output:
+                with open('./out/{}.slot'.format(domain), 'w', encoding='utf-8') as output:
                     output.write('\n'.join(slots))
-                with open('./output/{}.train'.format(domain), 'w', encoding='utf-8') as output:
+                with open('./out/{}.train'.format(domain), 'w', encoding='utf-8') as output:
                     output.write('\n'.join(['[{}] {}'.format(domain, x) for x in train]))
-                with open('./output/{}.dev'.format(domain), 'w', encoding='utf-8') as output:
+                with open('./out/{}.dev'.format(domain), 'w', encoding='utf-8') as output:
                     output.write('\n'.join(['[{}] {}'.format(domain, x) for x in dev]))
-                with open('./output/{}.test'.format(domain), 'w', encoding='utf-8') as output:
+                with open('./out/{}.test'.format(domain), 'w', encoding='utf-8') as output:
                     output.write('\n'.join(['[{}] {}'.format(domain, x) for x in test]))

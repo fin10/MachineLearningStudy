@@ -88,12 +88,12 @@ if __name__ == '__main__':
                     if expected[j] == actual[j]:
                         slots[expected[j]]['correct'] += 1
 
-            if not os.path.exists('./output'):
-                os.mkdir('./output')
+            if not os.path.exists('./out'):
+                os.mkdir('./out')
 
             domains = test_dataset.get_domains()
             for domain in domains:
-                with open('./output/{}_report.txt'.format(domain), 'w', encoding='utf-8') as file:
+                with open('./out/{}_report.txt'.format(domain), 'w', encoding='utf-8') as file:
                     indexes = [i for i in range(test_dataset.length()) if test_dataset.get_domain(i) == domain]
                     for index in indexes:
                         if test_dataset.get_iob(index) != predict[index]:
@@ -101,7 +101,7 @@ if __name__ == '__main__':
                             file.write('expected : {}\n'.format(test_dataset.get_iob(index)))
                             file.write('actual   : {}\n'.format(predict[index]))
 
-            with open('./output/slot_report.txt', 'w', encoding='utf-8') as output:
+            with open('./out/slot_report.txt', 'w', encoding='utf-8') as output:
                 for key in slots.keys():
                     slot = slots[key]
                     output.write('%s -> %.2f (%d/%d)\n' % (
